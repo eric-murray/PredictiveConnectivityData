@@ -11,15 +11,17 @@
 
 Sandbox API Repository to describe, develop, document, and test the PredictiveConnectivityData Service API(s). The repository does not yet belong to a CAMARA Sub Project.
 
-* API Repository [wiki page](not-yet-created) !! wiki page yet to be created
+* API Repository [wiki page](https://lf-camaraproject.atlassian.net/wiki/x/AQAnBw)
 
 ## Scope
 
 * Service API(s) “PredictiveConnectivityData” (see APIBacklog.md) 
-* The API(s) provide(s) the API consumer with the ability to:  
-  * §Short API scope description§ !! Add here a scope description according to the API proposal
-* Describe, develop, document, and test the API(s)
-* Started: §start date§
+* The API provides the capability to get the estimation of connectivity delivered by 4G/5G networks along a volume/area for a future date, time, and height.
+* Use Cases:
+  * Network Airspace Connectivity Information for Flight Planning: Provides mobile network coverage forecasts in specific geographic areas to help identify “black volumes” and mitigate the risk of losing drone control due to poor connectivity.
+  * Autonomous Car Routing: Delivers mobile network coverage forecasts along the planned route of an autonomous car to support decision-making in path planning and connectivity-dependent operations.
+* Describe, develop, document and test the APIs (with 1-2 Telcos)
+* Started: January 9, 2025
 <!-- * Incubating stage since: {{incubation date}} --> 
 
 ## Release Information
@@ -35,9 +37,9 @@ The repository has no (pre)releases yet, work in progress is within the main bra
 
 * Meetings are held virtually <!-- for new, independent Sandbox API repositories request a meeting link from the LF admin team or replace the information with the existing meeting information of the Sub Project -->
 
-  * Schedule: !! tbd
+  * Schedule: Bi-weekly on Tuesdays, 12:00–13:00 CET/CEST (11:00 UTC, 10:00 UTC during European DST)
   * [Registration / Join](https://zoom-lfx.platform.linuxfoundation.org/meetings/telcoapi) !! Update this link with your meeting registration/join link and delete the task
-  * Minutes: Access [meeting minutes](not-yet-created) !! update this link to your minutes archive page using the "Share" link and delete the task
+  * Minutes: Access [meeting minutes](https://lf-camaraproject.atlassian.net/wiki/x/PAAnBw) 
 * Mailing List
   * Subscribe / Unsubscribe to the mailing list <https://lists.camaraproject.org/g/sp-Predictive-Connectivity-Data>.
   * A message to the community of this Sub Project can be sent using <sp-Predictive-Connectivity-Data@lists.camaraproject.org>.
