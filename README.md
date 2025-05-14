@@ -21,7 +21,7 @@ Sandbox API Repository to describe, develop, document, and test the PredictiveCo
   * Network Airspace Connectivity Information for Flight Planning: Provides mobile network coverage forecasts in specific geographic areas to help identify “black volumes” and mitigate the risk of losing drone control due to poor connectivity.
   * Autonomous Car Routing: Delivers mobile network coverage forecasts along the planned route of an autonomous car to support decision-making in path planning and connectivity-dependent operations.
 * Describe, develop, document and test the APIs (with 1-2 Telcos)
-* Started: January 9, 2025
+* Started: April 2025
 <!-- * Incubating stage since: {{incubation date}} --> 
 
 ## Release Information
