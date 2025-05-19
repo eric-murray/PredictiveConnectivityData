@@ -1,3 +1,6 @@
-| Org                    | Name                                      | GitHub Username        |
-| -----------------------| ------------------------------------------| -----------------------|
-| §company§ | §name§ | §github_username§ |
+| Org              | Name                         | GitHub Username       |
+|------------------|------------------------------|-----------------------|
+| Vodafone         | Eric Murray                  | eric-murray           |
+| Vodafone         | Sachin Kumar                 | sachinvodafone        |
+| Telefónica       | Violeta Gonzales Fernandez   | VGF-TEF               |
+| Telefónica       | Alberto Ramos Monagas        | albertoramosmonagas   |
