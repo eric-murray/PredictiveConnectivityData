@@ -1,0 +1,12 @@
+# PredictiveConnectivityData API User Story
+
+| **Item** | **Details** |
+|---------|-------------|
+| **_Summary_** | The API provides the capability to get the estimation of connectivity delivered by 4G/5G networks along a volume/area for a future date, time and height. |
+| **_Actors and Scope_** | **Scope:**<br>- Retrieve predicted mobile connectivity (4G/5G) for a defined polygonal area, time interval, and height.<br>- Supports planning in aerial and terrestrial domains.<br><br>**Use Case 1 – Network Airspace Connectivity Information (forecast) for Flight Planning:**<br>- Delivers comprehensive analysis with data about mobile network coverage in specific geographic areas.<br>- Identifies “black volumes” to avoid drone disconnection risks.<br><br>**Use Case 2 – Autonomous Car:**<br>- Provides predicted mobile network coverage data along the vehicle route. |
+| **_Pre-conditions_** | – The client must provide the following inputs:<br>1. **Requested Area:** polygonal area defined by coordinates (Required)<br>2. **Start Time** and **End Time:** future time window (Required)<br>3. **Service Level:** type of service needed (e.g., C2-Coms, Streaming) (Required)<br>4. **Technology:** 4G or 5G (Optional)<br>5. **Height** and **Precision** (as suggested in scope evolution discussions) |
+| **_Activities/Steps_** | - The client submits a request including the inputs listed above.<br> - The API responds with:<br>1. An array of cells (Geohash-encoded) with hourly connectivity predictions:<br>&nbsp;&nbsp;&nbsp;&nbsp;- GC: Good Connectivity<br>&nbsp;&nbsp;&nbsp;&nbsp;- MC: Marginal Connectivity<br>&nbsp;&nbsp;&nbsp;&nbsp;- NC: No Connectivity<br>2. Layer thickness in meters (AGL)<br>– Output may optionally include **Signal Strength** instead of **Service Level**. |
+| **_Post-conditions_** | The requester obtains connectivity forecasts that support planning for flight or vehicle route safety based on mobile network availability. |
+| **_Exceptions_** | Several exceptions might occur during the PredictiveConnectivityData API operations:<br>- **Invalid input:** Required fields missing or incorrectly formatted (e.g., malformed polygon, missing Start/End Time or Service Level).<br>- **Unsupported values:** Inputs that exceed defined limits (e.g., time window too far in the future, unsupported technology type).<br>- **Unavailable data:** The requested area, time, or combination of parameters does not match any available prediction dataset. |
+
+
