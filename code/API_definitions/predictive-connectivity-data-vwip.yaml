@@ -1,0 +1,1045 @@
+openapi: 3.0.3
+info:
+  title: Predictive Connectivity Data
+  description: >-
+    # Introduction
+
+    With the Dynamic Predictive Connectivity Data API, the consumer can retrieve an estimation of connectivity delivered by 4/5G networks along a volume/area for a future date, time and height.
+
+    This functionality can be used for multiple use cases, some of the possible use cases for this API are:
+
+    - Network Airspace Connectivity Information for Drones: supporting drone flight planning with detailed analysis of mobile network coverage in the airspace across specific geographic areas.
+
+    - Mobile Network Analysis for Autonomous Cars: enabling route planning through in-depth evaluation of mobile network availability.
+
+    The list above is just a few examples, the API can be used for other use cases as well.
+
+    # Relevant Definitions and concepts
+
+    * **AGL**: Means “Above Ground Level” and describes the vertical height
+    above the ground.
+
+    * **Service Level**: Describes, in measurable terms, the quality of service
+    a telecommunication provider furnishes a consumer within a given time period.
+
+    * **Network Type**: Refers to the type of connectivity (4G/5G) for which to retrieve data.
+
+    * **Notification URL and token**: Developers may provide a callback URL (`sink`) for receiving an async response.
+    This is an optional parameter. If `sink` is included, it is RECOMMENDED for the client to provide as well the `sinkCredential`
+    property to protect the notification endpoint. In the current version,`sinkCredential.credentialType` MUST be set to `ACCESSTOKEN` if provided.
+    When an asynchronous response is requested, the 202 response of the API will include an `operationId` property. This `operationId` property will
+    also be sent in the callback notification. The purpose of the `operationId` is to correlate an asynchronous response with its corresponding request.
+
+
+    # API Functionality
+
+    Once a developer specifies (1) the area as a polygon shape, (2) the service 
+    level and (3) time interval in which they want to obtain the connectivity estimation,
+    the API returns a data set consisting of a sequence of time ranges, with each
+    time range containing the input polygon subdivided into equal-sized grid cells.
+
+    For each of the equal-sized cells of the grid, an analysis of Connectivity Levels
+    is reported for each time slot within the range, this includes data classified into:
+
+      - `GC`: Means good connectivity. Service level met even in unfavorable conditions.
+      - `MC`: Means marginal connectivity. Service level might not be met.
+      - `NC`: Means no connectivity. Service level not met.
+      - `ND`: No connectivity data.
+
+    These values are calculated based on network data and/or prediction models trained on
+    such data.
+
+    The polygon provided must comply with certain restrictions, which must be
+    previously validated by the developer:
+
+      - The polygon will not exceed a certain area.
+      - The polygon cannot have an arbitrary complexity (unlimited number of
+      sides, complex shapes, etc.).
+      - The polygon must be associated with a location where the telco provides
+      mobile connectivity services. Cells outside the area supported by the
+      implementation will not be returned. Therefore, if a polygon is located
+      entirely outside the supported area, an empty array will be returned.
+
+    The standard behaviour of the API is synchronous, although for large
+    area requests the API may behave asynchronously. An API invoker can enforce
+    asynchronous behaviour by providing a callback URL (sink) in the request,
+    in this case the API sends a callback to the callback URL provided with the
+    result of the request. If sink is included, it is RECOMMENDED for the
+    client to provide as well the sinkCredential property to protect the
+    notification endpoint. In the current version, sinkCredential.credentialType
+    MUST be set to ACCESSTOKEN if provided. When an asynchronous response is
+    requested, the 202 response of the API will include an `operationId`
+    property. This `operationId` property will also be sent in the callback
+    notification. The purpose of the `operationId` is to correlate an
+    asynchronous response with its corresponding request.
+    
+    ## Error handling:
+    
+    For requests with a combination of area, startTime and endTime
+    properties involving an amount of processing that cannot be processed
+    synchronously, the API returns the error response
+    PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_SYNC_RESPONSE.
+
+    For requests with a combination of area, startTime and endTime
+    properties too big for both synchronous and asynchronous processing, the API
+    returns the error response PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_REQUEST.
+
+    If an error happens during the asynchronous processing of the request. The
+    API callback will have property status with value OPERATION_NOT_COMPLETED
+    as an error cannot be returned in the callback. The callback will also
+    include the statusInfo property to add extra information about the error.
+
+    NOTE: In case the property “Technology” is not included, the quality of connectivity 
+    will be returned considering both 4G and 5G networks.
+
+    # Resources and Operations overview
+
+    The API provides one endpoint that accepts POST requests for obtaining the
+    connectivity in a concrete area for a concrete service level and network
+    type/s.
+
+    # Authorization and authentication
+
+    The "Camara Security and Interoperability Profile" provides details of how an API consumer requests an access token. Please refer to Identity and Consent Management (https://github.com/camaraproject/IdentityAndConsentManagement/) for the released version of the profile.
+
+    The specific authorization flows to be used will be agreed upon during the onboarding process, happening between the API consumer and the API provider, taking into account the declared purpose for accessing the API, whilst also being subject to the prevailing legal framework dictated by local legislation.
+
+    In cases where personal data is processed by the API and users can exercise their rights through mechanisms such as opt-in and/or opt-out, the use of three-legged access tokens is mandatory. This ensures that the API remains in compliance with privacy regulations, upholding the principles of transparency and user-centric privacy-by-design.
+
+    # Further info and support
+
+    (FAQs will be added in a later version of the documentation)
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: wip
+  x-camara-commonalities: 0.5
+externalDocs:
+  description: Product documentation at Camara.
+  url: https://github.com/camaraproject/
+servers:
+  - url: "{apiRoot}/predictive-connectivity-data/vwip"
+    variables:
+      apiRoot:
+        default: https://localhost:9091
+        description: API root, defined by the service provider, e.g. `api.example.com` or `api.example.com/somepath`
+tags:
+  - name: Connectivity Data
+    description: Operations to retrieve connectivity information.
+paths:
+  /retrieve:
+    post:
+      tags:
+        - Connectivity Data
+      summary: Obtain connectivity information in the specified area
+      description: >-
+        Retrieves the connectivity for a concrete area, specifying the
+        required service level that has to be met in the whole area in the
+        requested network type/s.
+      operationId: retrieveConnectivity
+      security:
+        - openId:
+          - predictive-connectivity-data:read
+      parameters:
+        - $ref: '#/components/parameters/x-correlator'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetrieveConnectivityRequest'
+        required: true
+      responses:
+        '200':
+          description: Connectivity data result.
+          headers:
+            x-correlator:
+              $ref: '#/components/headers/x-correlator'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectivityDataResponse'
+              examples:
+                ConnectivityDataSupportedAreaResponseExample:
+                  $ref: '#/components/examples/ConnectivityDataSupportedAreaResponseExample'
+                ConnectivityDataPartOfAreaNotSupportedResponseExample:
+                  $ref: "#/components/examples/ConnectivityDataPartOfAreaNotSupportedResponseExample"
+                ConnectivityDataAreaNotSupportedResponseExample:
+                  $ref: "#/components/examples/ConnectivityDataAreaNotSupportedResponseExample"
+        '202':
+          description: Connectivity data requested. This response is returned when the behaviour of the API is asynchronous.
+          headers:
+            x-correlator:
+              $ref: '#/components/headers/x-correlator'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedAsyncResponse'
+        '400':
+          $ref: '#/components/responses/RetrieveConnectivityBadRequest400'
+        '401':
+          $ref: '#/components/responses/Generic401'
+        '403':
+          $ref: '#/components/responses/Generic403'
+        '404':
+          $ref: '#/components/responses/Generic404'
+        '422':
+          $ref: '#/components/responses/RetrieveConnectivityUnprocessableContent422'
+        '429':
+          $ref: '#/components/responses/Generic429'
+      callbacks:
+        connectivityCallback:
+          '{$request.body#/sink}':
+            post:
+              summary: Callback for asynchronous connectivity data retrieval
+              description: >-
+                This callback is invoked to provide the result of an asynchronous          
+                connectivity data retrieval request.
+              operationId: connectivityCallback
+              parameters:
+                - $ref: '#/components/parameters/x-correlator'
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ConnectivityDataAsyncResponse'
+                    examples:
+                      ConnectivityDataSupportedAreaAsyncResponseExample:
+                        $ref: "#/components/examples/ConnectivityDataSupportedAreaAsyncResponseExample"
+                      ConnectivityDataOperationNotCompletedExample:
+                        $ref: "#/components/examples/ConnectivityDataOperationNotCompletedExample"
+                required: true
+              responses:
+                '204':
+                  description: Callback successfully received.
+                '400':
+                  $ref: '#/components/responses/Generic400'
+                '401':
+                  $ref: '#/components/responses/Generic401'
+                '403':
+                  $ref: '#/components/responses/Generic403'
+                "410":
+                  $ref: "#/components/responses/Generic410"
+components:
+  securitySchemes:
+    openId:
+      type: openIdConnect
+      openIdConnectUrl: https://example.com/.well-known/openid-configuration
+  headers:
+    x-correlator:
+      description: Correlation id for the different services.
+      schema:
+        type: string
+        pattern: ^[a-zA-Z0-9-]{0,55}$
+  parameters:
+    x-correlator:
+      name: x-correlator
+      in: header
+      description: Correlation id for the different services.
+      schema:
+        type: string
+        pattern: ^[a-zA-Z0-9-]{0,55}$
+  schemas:
+    RetrieveConnectivityRequest:
+      type: object
+      description: Request object for retrieving connectivity data in a specified area.
+      properties:
+        serviceLevel:
+          $ref: '#/components/schemas/ServiceLevel'
+        area:
+          $ref: '#/components/schemas/Area'
+        startTime:
+          type: string
+          format: date-time
+          description: >-
+            Start date time in [ISO-8601](https://en.wikipedia.org/wiki/ISO_8601)
+            and must have time zone. Recommended format is
+            YYYY-MM-dd'T'HH:mm:ss.SSSZ (i.e. which allows
+            2023-07-03T14:27:08.312+02:00 or 2023-07-03T12:27:08.312Z).
+        endTime:
+          type: string
+          format: date-time
+          description: >-
+            End date time in [ISO-8601](https://en.wikipedia.org/wiki/ISO_8601)
+            and must have time zone. Recommended format is
+            YYYY-MM-dd'T'HH:mm:ss.SSSZ (i.e. which allows
+            2023-07-03T14:27:08.312+02:00 or 2023-07-03T12:27:08.312Z).
+        networkType:
+          $ref: '#/components/schemas/NetworkType'
+        sink:
+          type: string
+          format: uri
+          description: The address where the API response will be asynchronously delivered, using the HTTP protocol.
+          example: 'https://endpoint.example.com/sink'
+        sinkCredential:
+          description: A sink credential provides authentication or authorization information necessary to enable the delivery of events to a target.
+          allOf:
+            - $ref: '#/components/schemas/SinkCredential'
+      required:
+        - serviceLevel
+        - area
+        - startTime
+        - endTime
+    Area:
+      description: Base schema for all areas
+      type: object
+      properties:
+        areaType:
+          $ref: "#/components/schemas/AreaType"
+      required:
+        - areaType
+      discriminator:
+        propertyName: areaType
+        mapping:
+          POLYGON: "#/components/schemas/Polygon"
+    AreaType:
+      type: string
+      description: |
+        Type of this area.
+        POLYGON - The area is defined as a polygon.
+      enum:
+        - POLYGON
+    Polygon:
+      description: Polygonal area. The Polygon should be a simple polygon, i.e. should not intersect itself.
+      allOf:
+        - $ref: "#/components/schemas/Area"
+        - type: object
+          required:
+            - boundary
+          properties:
+            boundary:
+              $ref: "#/components/schemas/PointList"
+    PointList:
+      description: List of points defining a polygon
+      type: array
+      items:
+        $ref: "#/components/schemas/Point"
+      minItems: 3
+      maxItems: 15
+    Point:
+      type: object
+      description: Coordinates (latitude, longitude) defining a location in a map
+      required:
+        - latitude
+        - longitude
+      properties:
+        latitude:
+          $ref: "#/components/schemas/Latitude"
+        longitude:
+          $ref: "#/components/schemas/Longitude"
+      example:
+        latitude: 50.735851
+        longitude: 7.10066
+    Latitude:
+      description: Latitude component of a location
+      type: number
+      format: double
+      minimum: -90
+      maximum: 90
+    Longitude:
+      description: Longitude component of location
+      type: number
+      format: double
+      minimum: -180
+      maximum: 180
+    ServiceLevel:
+      description: >-
+        Describes the requested communication service level. Although more
+        categories may be added in the future, for the time being, the possible
+        service levels are as follows:
+          - C2: Command and Control. Consists in connecting an unmanned aerial vehicle with its remote controller. This link allows data transmission in both directions, facilitating real-time operation and feedback.
+          - STREAM_4K: Streaming in 4K quality.
+      type: string
+      enum:
+        - C2
+        - STREAM_4K
+    NetworkType:
+      description: >-
+        Specifies the type of connectivity for which to retrieve data. Allowed
+        values are `4G` and `5G`. In case the property is not included, the
+        quality of connectivity will be returned considering both 4G and 5G
+        networks.
+      type: string
+      enum:
+        - 4G
+        - 5G
+    SinkCredential:
+      type: object
+      properties:
+        credentialType:
+          type: string
+          enum:
+            - PLAIN
+            - ACCESSTOKEN
+            - REFRESHTOKEN
+          description: |
+            The type of the credential.
+            Note: Type of the credential - MUST be set to ACCESSTOKEN for now
+      discriminator:
+        propertyName: credentialType
+        mapping:
+          PLAIN: '#/components/schemas/PlainCredential'
+          ACCESSTOKEN: '#/components/schemas/AccessTokenCredential'
+          REFRESHTOKEN: '#/components/schemas/RefreshTokenCredential'
+      required:
+        - credentialType
+    PlainCredential:
+      type: object
+      description: A plain credential as a combination of an identifier and a secret.
+      allOf:
+        - $ref: '#/components/schemas/SinkCredential'
+        - type: object
+          required:
+            - identifier
+            - secret
+          properties:
+            identifier:
+              description: The identifier might be an account or username.
+              type: string
+            secret:
+              description: The secret might be a password or passphrase.
+              type: string
+    AccessTokenCredential:
+      type: object
+      description: An access token credential.
+      allOf:
+        - $ref: '#/components/schemas/SinkCredential'
+        - type: object
+          properties:
+            accessToken:
+              description: REQUIRED. An access token is a previously acquired token granting access to the target resource.
+              type: string
+            accessTokenExpiresUtc:
+              type: string
+              format: date-time
+              description: |
+                REQUIRED. An absolute (UTC) timestamp at which the token shall be considered expired.
+                If the access token is a JWT and registered "exp" (Expiration Time) claim is present, the two expiry times should match.
+                It must follow [RFC 3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) and must have time zone.
+                Recommended format is yyyy-MM-dd'T'HH:mm:ss.SSSZ (i.e. which allows 2023-07-03T14:27:08.312+02:00 or 2023-07-03T12:27:08.312Z)
+              example: "2023-07-03T12:27:08.312Z"
+            accessTokenType:
+              description: REQUIRED. Type of the access token (See [OAuth 2.0](https://tools.ietf.org/html/rfc6749#section-7.1)). For the current version of the API the type MUST be set to `Bearer`.
+              type: string
+              enum:
+                - bearer
+          required:
+            - accessToken
+            - accessTokenExpiresUtc
+            - accessTokenType
+    RefreshTokenCredential:
+      type: object
+      description: An access token credential with a refresh token.
+      allOf:
+        - $ref: '#/components/schemas/SinkCredential'
+        - type: object
+          properties:
+            accessToken:
+              description: REQUIRED. An access token is a previously acquired token granting access to the target resource.
+              type: string
+            accessTokenExpiresUtc:
+              type: string
+              format: date-time
+              description: |
+                REQUIRED. An absolute (UTC) timestamp at which the token shall be considered expired.
+                If the access token is a JWT and registered "exp" (Expiration Time) claim is present, the two expiry times should match.
+                It must follow [RFC 3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) and must have time zone.
+                Recommended format is yyyy-MM-dd'T'HH:mm:ss.SSSZ (i.e. which allows 2023-07-03T14:27:08.312+02:00 or 2023-07-03T12:27:08.312Z)
+              example: "2023-07-03T12:27:08.312Z"
+            accessTokenType:
+              description: REQUIRED. Type of the access token (See [OAuth 2.0](https://tools.ietf.org/html/rfc6749#section-7.1)).
+              type: string
+              enum:
+                - bearer
+            refreshToken:
+              description: REQUIRED. An refresh token credential used to acquire access tokens.
+              type: string
+            refreshTokenEndpoint:
+              type: string
+              format: uri
+              description: REQUIRED. A URL at which the refresh token can be traded for an access token.
+      required:
+        - accessToken
+        - accessTokenExpiresUtc
+        - accessTokenType
+        - refreshToken
+        - refreshTokenEndpoint
+    ConnectivityDataResponse:
+      type: object
+      description: >-
+        Response that contains information about the requested area connectivity
+        for the service level selected.
+      properties:
+        layerThickness:
+          description: Thickness in metres of each layer.
+          type: number
+        timedConnectivityData:
+          type: array
+          description: >-
+             Time ranges along with the connectibity data for the cells within it.
+             The request startTime or the request endTime have to be fully covered by the intervals.
+             For example, if the intervals are 1-hour long and the input date range were [2024-01-03T11:25:00Z
+             to 2024-01-03T12:45:00Z] it would contain 2 intervals (Interval from 2024-01-03T11:00:00Z
+             to 2024-01-03T12:00:00Z and interval from 2024-01-03T12:00:00Z to 2024-01-03T13:00:00Z).
+          items:
+            $ref: '#/components/schemas/TimedConnectivityData'
+        status:
+          $ref: '#/components/schemas/ResponseStatus'
+        statusInfo:
+          type: string
+          description: Information about the status, mandatory when property `status` is `OPERATION_NOT_COMPLETED` for adding extra information about the error.
+          example: Some error happened during the processing of the request
+      required:
+        - layerThickness
+        - timedConnectivityData
+        - status
+    AcceptedAsyncResponse:
+      type: object
+      properties:
+        operationId:
+          $ref: '#/components/schemas/OperationId'
+      required:
+        - operationId
+    ConnectivityDataAsyncResponse:
+      allOf:
+        - $ref: '#/components/schemas/ConnectivityDataResponse'
+        - type: object
+          properties:
+            operationId:
+              $ref: '#/components/schemas/OperationId'
+          required:
+            - operationId
+    OperationId:
+      type: string
+      description: The unique identifier of the asynchronous operation that is returned when the operation is initiated.
+      example: 2322f362-eaab-4cf3-86d2-efcbdf3a7cb4
+    ResponseStatus:
+      type: string
+      description: >-
+        Represents the state of the response for the input polygon defined in the request, the possible values are:
+          - `SUPPORTED_AREA`: The whole request area is supported. Connectivity data for the entire requested area is returned.
+          - `PART_OF_AREA_NOT_SUPPORTED`: Part of the requested area is outside the MNOs coverage area, the cells outside the coverage
+          area will have property `layerConnectivities` with all items in the array with value `ND`.
+          - `AREA_NOT_SUPPORTED`: The whole requested area is outside the MNOs coverage area. No data will be returned.
+          - `OPERATION_NOT_COMPLETED`: An error happened during asynchronous processing of the request. This status will only be returned
+          in case the asynchronous API behaviour is used.
+      enum:
+        - SUPPORTED_AREA
+        - PART_OF_AREA_NOT_SUPPORTED
+        - AREA_NOT_SUPPORTED
+        - OPERATION_NOT_COMPLETED
+    TimedConnectivityData:
+      type: object
+      description: >-
+        Represents a time interval with connectivity data for the cells in the
+        area. Time interval length is
+        determined by the implementation. The request startTime or the request
+        endTime have to be fully covered by the intervals. For example, if the
+        intervals are 1-hour long and the input date range were
+        [2024-01-03T11:25:00Z to 2024-01-03T12:45:00Z] it would contain 2
+        intervals (Interval from 2024-01-03T11:00:00Z to 2024-01-03T12:00:00Z
+        and interval from 2024-01-03T12:00:00Z to 2024-01-03T13:00:00Z).
+      properties:
+        startTime:
+          type: string
+          format: date-time
+          description: >-
+            Interval start time. It must follow [RFC 3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6)
+            and must have time zone. Recommended format is yyyy-MM-dd'T'HH:mm:ss.SSSZ
+            (i.e. which allows 2023-07-03T14:27:08.312+02:00 or 2023-07-03T12:27:08.312Z)
+          example: "2023-07-03T10:00:00Z"
+        endTime:
+          type: string
+          format: date-time
+          description: >-
+            Interval end time. It must follow [RFC 3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6)
+            and must have time zone. Recommended format is yyyy-MM-dd'T'HH:mm:ss.SSSZ
+            (i.e. which allows 2023-07-03T14:27:08.312+02:00 or 2023-07-03T12:27:08.312Z)
+          example: "2023-07-03T11:00:00Z"
+        cellConnectivityData:
+          $ref: '#/components/schemas/CellConnectivityDataArray'
+      required:
+        - startTime
+        - endTime
+        - cellConnectivityData
+    CellConnectivityDataArray:
+      type: array
+      description: >-
+        Connectivity data for the different cells in a concrete time range.
+      items:
+        $ref: '#/components/schemas/CellConnectivityData'
+      minItems: 1
+    CellConnectivityData:
+      description: >-
+        Represents a rectangular grid cell within the specified area, including
+        its connectivity data.
+      properties:
+        geohash:
+          type: string
+          description: >-
+            Coordinates of the cell represented as a string using the [Geohash
+            system](https://en.wikipedia.org/wiki/Geohash), encoding a
+            geographic location into a short string. The value length, and thus
+            the cell granularity, is determined by the implementation.
+          example: ezdmemd
+        layerConnectivities:
+          $ref: '#/components/schemas/LayerConnectivities'
+      required:
+        - geohash
+        - layerConnectivities
+    LayerConnectivities:
+      type: array
+      description: >-
+        Sequence of connectivity quality values in each of the layers in which
+        the vertical space over the area determined by the `geohash` is
+        decomposed. All layers are considered having the same `layerThickness`
+        meters and are ordered consecutively in the array starting from the
+        ground (First layer will start at 0 meters AGL). So the layer at
+        index = N would comprise the heights, referenced to AGL, among N *
+        `layerThickness` meters and (N+1) * `layerThickness` meters.
+
+
+        The possible connectivity values are:
+          - GC: Means good connectivity. Service level met even in unfavorable conditions.
+          - MC: Means marginal connectivity. Service level might not be met.
+          - NC: Means no connectivity. Service level not met.
+          - ND: No connectivity data.
+
+        **NOTE**: These connectivity values are relative to the `serviceLevel`
+        and `networkType` specified in the request.
+      items:
+        $ref: '#/components/schemas/Connectivity'
+    Connectivity:
+      type: string
+      enum:
+        - GC
+        - MC
+        - NC
+        - ND
+    ErrorInfo:
+      type: object
+      required:
+        - status
+        - code
+        - message
+      properties:
+        status:
+          type: integer
+          description: HTTP status code returned along with this error response.
+        code:
+          type: string
+          description: Code given to this error.
+        message:
+          type: string
+          description: Detailed error description.
+  responses:
+    RetrieveConnectivityBadRequest400:
+      description: >-
+        Problem with the client request. In addition to regular scenario of
+        `INVALID_ARGUMENT`, another scenarios may exist:
+          - The area is not a polygon shape or has an arbitrary complexity ("code": "PREDICTIVE_CONNECTIVITY_DATA.INVALID_AREA", "message": "The area is not a polygon shape or has an arbitrary complexity")
+          - Indicated `startTime` is greater than the maximum allowed ("code": "PREDICTIVE_CONNECTIVITY_DATA.MAX_STARTDATE_EXCEEDED", "message": "Indicated startTime is greater than the maximum allowed")
+          - Indicated `startTime` is earlier than the minimum allowed ("code": "PREDICTIVE_CONNECTIVITY_DATA.MIN_STARTDATE_EXCEEDED", "message": "Indicated startTime is earlier than the minimum allowed")
+          - Indicated `endTime` is earlier than the `startTime` ("code": "PREDICTIVE_CONNECTIVITY_DATA.INVALID_END_DATE", "message": "Indicated endTime is earlier than the startTime")
+          - Indicated time period is greater than the maximum allowed (More than maximum hours between startTime and endTime) ("code": "PREDICTIVE_CONNECTIVITY_DATA.MAX_TIME_PERIOD_EXCEEDED", "message": "Indicated time period is greater than the maximum allowed (More than maximum hours between startTime and endTime)")
+      headers:
+        x-correlator:
+          $ref: '#/components/headers/x-correlator'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorInfo'
+          examples:
+            InvalidArgument:
+              value:
+                status: 400
+                code: INVALID_ARGUMENT
+                message: Invalid input
+            InvalidAreaIssue:
+              value:
+                status: 400
+                code: PREDICTIVE_CONNECTIVITY_DATA.INVALID_AREA
+                message: The area is not a polygon shape or has an arbitrary complexity
+            MaxStartDateIssue:
+              value:
+                status: 400
+                code: PREDICTIVE_CONNECTIVITY_DATA.MAX_STARTDATE_EXCEEDED
+                message: Indicated startTime is greater than the maximum allowed
+            MinStartDateIssue:
+              value:
+                status: 400
+                code: PREDICTIVE_CONNECTIVITY_DATA.MIN_STARTDATE_EXCEEDED
+                message: Indicated startTime is earlier than the minimum allowed
+            InvalidEndDateIssue:
+              value:
+                status: 400
+                code: PREDICTIVE_CONNECTIVITY_DATA.INVALID_END_DATE
+                message: Indicated endTime is earlier than the startTime
+            MaxDurationIssue:
+              value:
+                status: 400
+                code: PREDICTIVE_CONNECTIVITY_DATA.MAX_TIME_PERIOD_EXCEEDED
+                message: >-
+                  Indicated time period is greater than the maximum allowed
+                  (More than maximum hours between startTime and endTime)
+    RetrieveConnectivityUnprocessableContent422:
+      description: >-
+        Problem with the client request. In addition to regular scenario of
+        `INVALID_ARGUMENT`, another scenarios may exist:
+          - Indicated request is too big for both synchronous and asynchronous processing ("code": "PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_REQUEST", "message": "The indicated request is too big for both synchronous and asynchronous processing")
+          - Indicated request is too big for synchronous processing and asynchronous processing is not enabled ("code": "PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_SYNC_RESPONSE", "message": "The indicated request is too big for synchronous processing and asynchronous processing is not enabled")
+      headers:
+        x-correlator:
+          $ref: '#/components/headers/x-correlator'
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/ErrorInfo"
+              - type: object
+                properties:
+                  status:
+                    enum:
+                      - 422
+                  code:
+                    enum:
+                      - PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_REQUEST
+                      - PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_SYNC_RESPONSE
+          examples:
+            UnsupportedRequest:
+              value:
+                status: 422
+                code: PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_REQUEST
+                message: >-
+                  The indicated request is too big for both synchronous and
+                  asynchronous processing
+            UnsupportedSyncResponse:
+              value:
+                status: 422
+                code: PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_SYNC_RESPONSE
+                message: >-
+                  The indicated request is too big for synchronous processing
+                  and asynchronous processing is not enabled
+    Generic400:
+      description: Problem with the client request
+      headers:
+        x-correlator:
+          $ref: '#/components/headers/x-correlator'
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/ErrorInfo"
+              - type: object
+                properties:
+                  status:
+                    enum:
+                      - 400
+                  code:
+                    enum:
+                      - INVALID_ARGUMENT
+          examples:
+            GENERIC_400_INVALID_ARGUMENT:
+              description: Invalid Argument. Generic Syntax Exception
+              value:
+                status: 400
+                code: INVALID_ARGUMENT
+                message: Client specified an invalid argument, request body or query param.
+    Generic401:
+      description: Unauthorized
+      headers:
+        x-correlator:
+          $ref: '#/components/headers/x-correlator'
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/ErrorInfo"
+              - type: object
+                properties:
+                  status:
+                    enum:
+                      - 401
+                  code:
+                    enum:
+                      - UNAUTHENTICATED
+          examples:
+            GENERIC_401_UNAUTHENTICATED:
+              description: Request cannot be authenticated
+              value:
+                status: 401
+                code: UNAUTHENTICATED
+                message: Request not authenticated due to missing, invalid, or expired credentials.
+    Generic403:
+      description: Forbidden
+      headers:
+        x-correlator:
+          $ref: '#/components/headers/x-correlator'
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/ErrorInfo"
+              - type: object
+                properties:
+                  status:
+                    enum:
+                      - 403
+                  code:
+                    enum:
+                      - PERMISSION_DENIED
+          examples:
+            GENERIC_403_PERMISSION_DENIED:
+              description: Permission denied. OAuth2 token access does not have the required scope or when the user fails operational security
+              value:
+                status: 403
+                code: PERMISSION_DENIED
+                message: Client does not have sufficient permissions to perform this action.
+    Generic404:
+      description: Not found
+      headers:
+        x-correlator:
+          $ref: '#/components/headers/x-correlator'
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/ErrorInfo"
+              - type: object
+                properties:
+                  status:
+                    enum:
+                      - 404
+                  code:
+                    enum:
+                      - NOT_FOUND
+          examples:
+            GENERIC_404_NOT_FOUND:
+              description: Resource is not found
+              value:
+                status: 404
+                code: NOT_FOUND
+                message: The specified resource is not found.
+    Generic410:
+      description: Gone
+      headers:
+        x-correlator:
+          $ref: "#/components/headers/x-correlator"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/ErrorInfo"
+              - type: object
+                properties:
+                  status:
+                    enum:
+                      - 410
+                  code:
+                    enum:
+                      - GONE
+          examples:
+            GENERIC_410_GONE:
+              description: Use in notifications flow to allow API Consumer to indicate that its callback is no longer available
+              value:
+                status: 410
+                code: GONE
+                message: Access to the target resource is no longer available.
+    Generic429:
+      description: Too Many Requests
+      headers:
+        x-correlator:
+          $ref: "#/components/headers/x-correlator"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/ErrorInfo"
+              - type: object
+                properties:
+                  status:
+                    enum:
+                      - 429
+                  code:
+                    enum:
+                      - QUOTA_EXCEEDED
+                      - TOO_MANY_REQUESTS
+          examples:
+            GENERIC_429_QUOTA_EXCEEDED:
+              description: Request is rejected due to exceeding a business quota limit
+              value:
+                status: 429
+                code: QUOTA_EXCEEDED
+                message: Out of resource quota.
+            GENERIC_429_TOO_MANY_REQUESTS:
+              description: Access to the API has been temporarily blocked due to rate or spike arrest limits being reached
+              value:
+                status: 429
+                code: TOO_MANY_REQUESTS
+                message: Rate limit reached.            
+  examples:
+    ConnectivityDataSupportedAreaResponseExample:
+      value:
+        layerThickness: 30
+        timedConnectivityData:
+          - startTime: "2024-01-03T11:00:00Z"
+            endTime: "2024-01-03T12:00:00Z"            
+            cellConnectivityData:
+              - geohash: ezdmemd
+                layerConnectivities:
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - NC
+                  - NC
+                  - NC
+              - geohash: ezdmemc
+                layerConnectivities:
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - NC
+                  - NC
+                  - NC
+          - startTime: "2024-01-03T11:00:00Z"
+            endTime: "2024-01-03T12:00:00Z"            
+            cellConnectivityData:
+              - geohash: ezdmemd
+                layerConnectivities:
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - NC
+                  - NC
+                  - NC
+              - geohash: ezdmemc
+                layerConnectivities:
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - NC
+                  - NC
+                  - NC
+        status: SUPPORTED_AREA                  
+    ConnectivityDataPartOfAreaNotSupportedResponseExample:
+      value:
+        layerThickness: 30
+        timedConnectivityData:
+          - startTime: "2024-01-03T11:00:00Z"
+            endTime: "2024-01-03T12:00:00Z"            
+            cellConnectivityData:
+              - geohash: ezdmemd
+                layerConnectivities:
+                  - NC
+                  - NC
+                  - NC
+                  - NC
+                  - NC
+                  - NC
+                  - NC
+                  - NC
+              - geohash: ezdmemc
+                layerConnectivities:
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - NC
+                  - NC
+                  - NC
+          - startTime: "2024-01-03T11:00:00Z"
+            endTime: "2024-01-03T12:00:00Z"            
+            cellConnectivityData:
+              - geohash: ezdmemd
+                layerConnectivities:
+                  - NC
+                  - NC
+                  - NC
+                  - NC
+                  - NC
+                  - NC
+                  - NC
+                  - NC
+              - geohash: ezdmemc
+                layerConnectivities:
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - NC
+                  - NC
+                  - NC
+        status: PART_OF_AREA_NOT_SUPPORTED                  
+    ConnectivityDataAreaNotSupportedResponseExample:
+      value:
+        layerThickness: 30
+        timedConnectivityData: []
+        status: AREA_NOT_SUPPORTED
+    ConnectivityDataSupportedAreaAsyncResponseExample:
+      value:
+        layerThickness: 30
+        timedConnectivityData:
+          - startTime: "2024-01-03T11:00:00Z"
+            endTime: "2024-01-03T12:00:00Z"            
+            cellConnectivityData:
+              - geohash: ezdmemd
+                layerConnectivities:
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - NC
+                  - NC
+                  - NC
+              - geohash: ezdmemc
+                layerConnectivities:
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - NC
+                  - NC
+                  - NC
+          - startTime: "2024-01-03T11:00:00Z"
+            endTime: "2024-01-03T12:00:00Z"            
+            cellConnectivityData:
+              - geohash: ezdmemd
+                layerConnectivities:
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - NC
+                  - NC
+                  - NC
+              - geohash: ezdmemc
+                layerConnectivities:
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - NC
+                  - NC
+                  - NC
+        status: SUPPORTED_AREA 
+        operationId: 2322f362-eaab-4cf3-86d2-efcbdf3a7cb4                     
+    ConnectivityDataOperationNotCompletedExample:
+      value:
+        layerThickness: 30
+        timedConnectivityData: []
+        status: OPERATION_NOT_COMPLETED
+        statusInfo: Some error happened during the processing of the request
+        operationId: 2322f362-eaab-4cf3-86d2-efcbdf3a7cb4
