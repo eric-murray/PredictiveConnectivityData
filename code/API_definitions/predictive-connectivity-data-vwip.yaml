@@ -763,7 +763,7 @@ components:
                 message: >-
                   The indicated request is too big for both synchronous and
                   asynchronous processing
-            PREDICTIVE_CONNECTIVITY_DATA_422_UNSUPPORTED_PRECISION:
+            PREDICTIVE_CONNECTIVITY_DATA_422_UNSUPPORTED_SYNC_RESPONSE:
               value:
                 status: 422
                 code: PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_SYNC_RESPONSE
