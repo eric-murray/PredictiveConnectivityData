@@ -199,7 +199,7 @@ paths:
             post:
               summary: Callback for asynchronous connectivity data retrieval
               description: >-
-                This callback is invoked to provide the result of an asynchronous    
+                This callback is invoked to provide the result of an asynchronous
                 connectivity data retrieval request.
               operationId: connectivityCallback
               parameters:
@@ -925,14 +925,14 @@ components:
               value:
                 status: 429
                 code: TOO_MANY_REQUESTS
-                message: Rate limit reached. 
+                message: Rate limit reached.
   examples:
     ConnectivityDataSupportedAreaResponseExample:
       value:
         layerThickness: 30
         timedConnectivityData:
           - startTime: "2024-01-03T11:00:00Z"
-            endTime: "2024-01-03T12:00:00Z"         
+            endTime: "2024-01-03T12:00:00Z"
             cellConnectivityData:
               - geohash: ezdmemd
                 layerConnectivities:
@@ -955,7 +955,7 @@ components:
                   - NC
                   - NC
           - startTime: "2024-01-03T11:00:00Z"
-            endTime: "2024-01-03T12:00:00Z"         
+            endTime: "2024-01-03T12:00:00Z"
             cellConnectivityData:
               - geohash: ezdmemd
                 layerConnectivities:
@@ -977,13 +977,13 @@ components:
                   - NC
                   - NC
                   - NC
-        status: SUPPORTED_AREA             
+        status: SUPPORTED_AREA
     ConnectivityDataPartOfAreaNotSupportedResponseExample:
       value:
         layerThickness: 30
         timedConnectivityData:
           - startTime: "2024-01-03T11:00:00Z"
-            endTime: "2024-01-03T12:00:00Z"         
+            endTime: "2024-01-03T12:00:00Z"
             cellConnectivityData:
               - geohash: ezdmemd
                 layerConnectivities:
@@ -1006,7 +1006,7 @@ components:
                   - NC
                   - NC
           - startTime: "2024-01-03T11:00:00Z"
-            endTime: "2024-01-03T12:00:00Z"   
+            endTime: "2024-01-03T12:00:00Z"
             cellConnectivityData:
               - geohash: ezdmemd
                 layerConnectivities:
@@ -1028,7 +1028,7 @@ components:
                   - NC
                   - NC
                   - NC
-        status: PART_OF_AREA_NOT_SUPPORTED                  
+        status: PART_OF_AREA_NOT_SUPPORTED
     ConnectivityDataAreaNotSupportedResponseExample:
       value:
         layerThickness: 30
@@ -1039,7 +1039,7 @@ components:
         layerThickness: 30
         timedConnectivityData:
           - startTime: "2024-01-03T11:00:00Z"
-            endTime: "2024-01-03T12:00:00Z"            
+            endTime: "2024-01-03T12:00:00Z"
             cellConnectivityData:
               - geohash: ezdmemd
                 layerConnectivities:
@@ -1062,7 +1062,7 @@ components:
                   - NC
                   - NC
           - startTime: "2024-01-03T11:00:00Z"
-            endTime: "2024-01-03T12:00:00Z"            
+            endTime: "2024-01-03T12:00:00Z"
             cellConnectivityData:
               - geohash: ezdmemd
                 layerConnectivities:
@@ -1084,8 +1084,8 @@ components:
                   - NC
                   - NC
                   - NC
-        status: SUPPORTED_AREA 
-        operationId: 2322f362-eaab-4cf3-86d2-efcbdf3a7cb4                     
+        status: SUPPORTED_AREA
+        operationId: 2322f362-eaab-4cf3-86d2-efcbdf3a7cb4
     ConnectivityDataOperationNotCompletedExample:
       value:
         layerThickness: 30
