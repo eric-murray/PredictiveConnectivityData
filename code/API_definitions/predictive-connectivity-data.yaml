@@ -152,7 +152,7 @@ paths:
       operationId: retrieveConnectivity
       security:
         - openId:
-          - predictive-connectivity-data:read
+            - predictive-connectivity-data:read
       parameters:
         - $ref: '#/components/parameters/x-correlator'
       requestBody:
