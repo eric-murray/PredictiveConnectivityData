@@ -336,9 +336,9 @@ components:
           type: boolean
           description: >-
             Optional parameter to request raw signal strength values in dBm for each layer.
-            If set to true and supported by the implementation, the response will include 
-            signal strength data alongside connectivity quality information. If not supported 
-            by the implementation, this parameter will be ignored and only connectivity 
+            If set to true and supported by the implementation, the response will include
+            signal strength data alongside connectivity quality information. If not supported
+            by the implementation, this parameter will be ignored and only connectivity
             quality will be returned.
           default: false
         sink:
@@ -695,13 +695,13 @@ components:
     LayerSignalStrengths:
       type: array
       description: >-
-        Predicted signal strength values in dBm for each layer. This array is optional 
-        and will only be present if the `includeSignalStrength` parameter was set to true 
-        in the request and is supported by the implementation. The array follows the same 
-        structure as `layerConnectivities`, with each element corresponding to the signal 
-        strength in dBm for the same layer index. All layers are considered having the same 
-        `layerThickness` meters and are ordered consecutively starting from the ground 
-        (First layer starts at 0 meters AGL). A null value indicates no signal strength 
+        Predicted signal strength values in dBm for each layer. This array is optional
+        and will only be present if the `includeSignalStrength` parameter was set to true
+        in the request and is supported by the implementation. The array follows the same
+        structure as `layerConnectivities`, with each element corresponding to the signal
+        strength in dBm for the same layer index. All layers are considered having the same
+        `layerThickness` meters and are ordered consecutively starting from the ground
+        (First layer starts at 0 meters AGL). A null value indicates no signal strength
         data is available for that layer.
         If a specific height was requested, this array will contain only one element corresponding to the signal strength for the layer at that height.
       items:
