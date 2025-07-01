@@ -33,7 +33,7 @@ info:
 
     # API Functionality
 
-    Once a developer specifies (1) the area as a polygon shape, (2) the service 
+    Once a developer specifies (1) the area as a polygon shape, (2) the service
     level and (3) time interval in which they want to obtain the connectivity estimation,
     the API returns a data set consisting of a sequence of time ranges, with each
     time range containing the input polygon subdivided into equal-sized grid cells.
@@ -72,9 +72,9 @@ info:
     property. This `operationId` property will also be sent in the callback
     notification. The purpose of the `operationId` is to correlate an
     asynchronous response with its corresponding request.
-    
+
     ## Error handling:
-    
+
     For requests with a combination of area, startTime and endTime
     properties involving an amount of processing that cannot be processed
     synchronously, the API returns the error response
@@ -89,7 +89,7 @@ info:
     as an error cannot be returned in the callback. The callback will also
     include the statusInfo property to add extra information about the error.
 
-    NOTE: In case the property “Technology” is not included, the quality of connectivity 
+    NOTE: In case the property “Technology” is not included, the quality of connectivity
     will be returned considering both 4G and 5G networks.
 
     # Resources and Operations overview
@@ -146,8 +146,7 @@ paths:
         requested network type/s.
       operationId: retrieveConnectivity
       security:
-        - openId:
-          - predictive-connectivity-data:read
+        - openId: predictive-connectivity-data:read
       parameters:
         - $ref: '#/components/parameters/x-correlator'
       requestBody:
@@ -200,7 +199,7 @@ paths:
             post:
               summary: Callback for asynchronous connectivity data retrieval
               description: >-
-                This callback is invoked to provide the result of an asynchronous          
+                This callback is invoked to provide the result of an asynchronous    
                 connectivity data retrieval request.
               operationId: connectivityCallback
               parameters:
@@ -731,7 +730,7 @@ components:
                 status: 400
                 code: PREDICTIVE_CONNECTIVITY_DATA.INVALID_TIME_PERIOD
                 message: >-
-                  Indicated time period is partially in the past and partially in the future      
+                  Indicated time period is partially in the past and partially in the future
     RetrieveConnectivityUnprocessableContent422:
       description: >-
         Problem with the client request. In addition to regular scenario of
@@ -926,14 +925,14 @@ components:
               value:
                 status: 429
                 code: TOO_MANY_REQUESTS
-                message: Rate limit reached.            
+                message: Rate limit reached. 
   examples:
     ConnectivityDataSupportedAreaResponseExample:
       value:
         layerThickness: 30
         timedConnectivityData:
           - startTime: "2024-01-03T11:00:00Z"
-            endTime: "2024-01-03T12:00:00Z"            
+            endTime: "2024-01-03T12:00:00Z"         
             cellConnectivityData:
               - geohash: ezdmemd
                 layerConnectivities:
@@ -956,7 +955,7 @@ components:
                   - NC
                   - NC
           - startTime: "2024-01-03T11:00:00Z"
-            endTime: "2024-01-03T12:00:00Z"            
+            endTime: "2024-01-03T12:00:00Z"         
             cellConnectivityData:
               - geohash: ezdmemd
                 layerConnectivities:
@@ -978,13 +977,13 @@ components:
                   - NC
                   - NC
                   - NC
-        status: SUPPORTED_AREA                  
+        status: SUPPORTED_AREA             
     ConnectivityDataPartOfAreaNotSupportedResponseExample:
       value:
         layerThickness: 30
         timedConnectivityData:
           - startTime: "2024-01-03T11:00:00Z"
-            endTime: "2024-01-03T12:00:00Z"            
+            endTime: "2024-01-03T12:00:00Z"         
             cellConnectivityData:
               - geohash: ezdmemd
                 layerConnectivities:
@@ -1007,7 +1006,7 @@ components:
                   - NC
                   - NC
           - startTime: "2024-01-03T11:00:00Z"
-            endTime: "2024-01-03T12:00:00Z"            
+            endTime: "2024-01-03T12:00:00Z"   
             cellConnectivityData:
               - geohash: ezdmemd
                 layerConnectivities:
