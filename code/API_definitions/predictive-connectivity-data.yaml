@@ -146,7 +146,8 @@ paths:
         requested network type/s.
       operationId: retrieveConnectivity
       security:
-        - openId: predictive-connectivity-data:read
+        - openId:
+            - predictive-connectivity-data:read
       parameters:
         - $ref: '#/components/parameters/x-correlator'
       requestBody:
