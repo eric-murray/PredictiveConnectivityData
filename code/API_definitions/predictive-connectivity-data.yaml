@@ -245,7 +245,11 @@ paths:
                 connectivity data retrieval request.
               operationId: connectivityCallback
               parameters:
-                - $ref: '#/components/parameters/x-correlator'
+                - name: x-correlator
+                  in: header
+                  description: Correlation id for the different services.
+                  schema:
+                    $ref: '#/components/schemas/XCorrelator'
               requestBody:
                 content:
                   application/json:
@@ -552,7 +556,7 @@ components:
         timedConnectivityData:
           type: array
           description: >-
-             Time ranges along with the connectibity data for the cells within it.
+             Time ranges along with the connectivity data for the cells within it.
              The request startTime or the request endTime have to be fully covered by the intervals.
              For example, if the intervals are 1-hour long and the input date range were [2024-01-03T11:25:00Z
              to 2024-01-03T12:45:00Z] it would contain 2 intervals (Interval from 2024-01-03T11:00:00Z
