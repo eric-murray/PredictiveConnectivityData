@@ -359,10 +359,12 @@ components:
         service levels are as follows:
           - C2: Command and Control. Consists in connecting an unmanned aerial vehicle with its remote controller. This link allows data transmission in both directions, facilitating real-time operation and feedback.
           - STREAM_4K: Streaming in 4K quality.
+          - BEST_EFFORT: A best effort data service with a qualitative connectivity assessment but no specific service level guarantee.
       type: string
       enum:
         - C2
         - STREAM_4K
+        - BEST_EFFORT
     NetworkType:
       description: >-
         Specifies the type of connectivity for which to retrieve data. Allowed
