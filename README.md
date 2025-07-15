@@ -39,7 +39,7 @@ The repository has no (pre)releases yet, work in progress is within the main bra
 
 * Schedule: Bi-weekly on Tuesdays, 10:00–11:00 UTC  
   (corresponds to 12:00–13:00 CEST, 06:00–07:00 EDT during Daylight Saving Time)
-  * [Registration / Join](https://zoom-lfx.platform.linuxfoundation.org/meeting/95479380109?password=0386fbda-1fb5-4e1a-8687-7b81fe8cacfa&invite=true) !! Update this link with your meeting registration/join link and delete the task
+  * [Registration / Join](https://zoom-lfx.platform.linuxfoundation.org/meeting/95479380109?password=0386fbda-1fb5-4e1a-8687-7b81fe8cacfa&invite=true)
   * Minutes: Access [meeting minutes](https://lf-camaraproject.atlassian.net/wiki/x/PAAnBw) 
 * Mailing List
   * Subscribe / Unsubscribe to the mailing list <https://lists.camaraproject.org/g/sp-Predictive-Connectivity-Data>.
