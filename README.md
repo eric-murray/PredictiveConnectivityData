@@ -38,7 +38,7 @@ Sandbox API Repository to describe, develop, document, and test the PredictiveCo
 <!-- In addition use/uncomment one or multiple the following alternative options when becoming applicable -->
 <!-- Pre-releases of this sub project are available in https://github.com/camaraproject/PredictiveConnectivityData/releases -->
 <!-- The latest public release is available here: https://github.com/camaraproject/PredictiveConnectivityData/releases/latest -->
-For changes see [CHANGELOG.md](https://github.com/camaraproject/DeviceSwap/blob/main/CHANGELOG.md)
+For changes see [CHANGELOG.md](https://github.com/camaraproject/PredictiveConnectivityData/blob/main/CHANGELOG.md)
 
 ## Contributing
 
