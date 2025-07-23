@@ -17,7 +17,7 @@ Feature: CAMARA Predictive Connectivity Data API, v0.1.0-rc.1
     # * An Area partially within the supported region
     # * An Area outside the supported region
     #
-    # References to OAS spec schemas refer to schemas specified in predictive-connectivity-data.yaml, version 0.1.0-rc-1
+    # References to OAS spec schemas refer to schemas specified in predictive-connectivity-data.yaml
 
     Background: Common retrieveConnectivity setup
         Given an environment at "apiRoot"
