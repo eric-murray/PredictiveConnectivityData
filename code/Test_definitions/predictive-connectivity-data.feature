@@ -6,7 +6,7 @@ Feature: CAMARA Predictive Connectivity Data API, v0.1.0-rc.1
     # * Min start and end date-times allowed
     # * Max requested time period allowed
     # * Network connectivity types allowed
-    # * Mas and min height allowed
+    # * Max and min height allowed
     # * Include the signal strength allowed
     # * Max size of the response(Combination of area, startTime, endTime, service level and precision requested) supported for a sync response
     # * Max size of the response(Combination of area, startTime, endTime, service level and precision requested) supported for an async response
