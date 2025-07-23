@@ -14,7 +14,7 @@ The below sections record the changes for each API version in each release as fo
 
 ## Release Notes
 This release contains the definition and documentation of
-* predictive-connectivity-data v0.1rc1
+* predictive-connectivity-data v0.1.0-rc.1
 
 The API definition(s) are based on
 * Commonalities v0.6.0-rc.1
