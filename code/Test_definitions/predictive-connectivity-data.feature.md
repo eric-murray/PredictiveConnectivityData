@@ -1,5 +1,3 @@
-#TOSAY hay muchas propiedades que se cubre con los additional schemas
-
 Feature: CAMARA Predictive Connectivity Data API, v0.1.0-rc.1
     # Input to be provided by the implementation to the tester
     #
