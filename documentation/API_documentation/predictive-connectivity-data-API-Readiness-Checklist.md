@@ -10,8 +10,8 @@ Checklist for predictive-connectivity-data v0.1.0-rc.1 in r1.1.
 |  4 | API versioning convention applied            |   M   |         M         |    M    |    M   |  N   | predictive-connectivity-data-v0.1.0-rc.1  |
 |  5 | API documentation                            |   M   |         M         |    M    |    M   |  N    | [inline in YAML](https://github.com/camaraproject/PredictiveConnectivityData/blob/main/code/API_definitions/predictive-connectivity-data.yaml) |
 |  6 | User stories                                 |   O   |         O         |    O    |    M   |  N    | [link](https://github.com/camaraproject/PredictiveConnectivityData/blob/main/documentation/API_documentation/Predictive-Connectivity-Data_User_Story.mdd) |
-|  7 | Basic API test cases & documentation         |   O   |         M         |    M    |    M   |  N    | [TBC link](/code/Test_definitions) |
-|  8 | Enhanced API test cases & documentation      |   O   |         O         |    O    |    M   |  N    | [TBC link](/code/Test_definitions) |
+|  7 | Basic API test cases & documentation         |   O   |         M         |    M    |    M   |  N    | [link](https://github.com/camaraproject/PredictiveConnectivityData/blob/main/code/Test_definitions/predictive-connectivity-data.feature) |
+|  8 | Enhanced API test cases & documentation      |   O   |         O         |    O    |    M   |  N    | [link](https://github.com/camaraproject/PredictiveConnectivityData/blob/main/code/Test_definitions/predictive-connectivity-data.feature) |
 |  9 | Test result statement                        |   O   |         O         |    O    |    M   |  N   | TBC |
 | 10 | API release numbering convention applied     |   M   |         M         |    M    |    M   |  N   | r1.1 |
 | 11 | Change log updated                           |   M   |         M         |    M    |    M   |  N   | [link](https://github.com/camaraproject/PredictiveConnectivityData/commits/r1.1) |
