@@ -35,9 +35,7 @@ In the following there is the list of the modifications with respect to the prev
 * Add precision, height and signal strenght to the wip version by @albertoramosmonagas in https://github.com/camaraproject/PredictiveConnectivityData/pull/25
 
 ### Changed
-* Update config.yml - replace placeholder $repo_name$ and update link to API Design Guide by @hdamker in https://github.com/camaraproject/PredictiveConnectivityData/pull/3
 * Define first WIP version of Predictive Connectivity Data API by @albertoramosmonagas in https://github.com/camaraproject/PredictiveConnectivityData/pull/20
-* docs: update README with onboarding info and kick off PDF by @albertoramosmonagas in https://github.com/camaraproject/PredictiveConnectivityData/pull/5
 * Align commonalities with v0.6-rc1 by @albertoramosmonagas in https://github.com/camaraproject/PredictiveConnectivityData/pull/21
 
 ### Fixed

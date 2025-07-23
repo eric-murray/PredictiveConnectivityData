@@ -324,7 +324,7 @@ components:
           type: integer
           description: >-
             Precision required of response cells. Precision defines a geohash level and corresponds to the length of the geohash for each cell. More information at [Geohash system](https://en.wikipedia.org/wiki/Geohash)"
-            If not included the default precision level 7 is used by default. In case of using a not supported level by the MNO, the API returns the error response `POPULATION_DENSITY_DATA.UNSUPPORTED_PRECISION`.
+            If not included the default precision level 7 is used by default. In case of using a not supported level by the MNO, the API returns the error response `PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_PRECISION`.
           minimum: 1
           maximum: 12
           default: 7
@@ -676,6 +676,7 @@ components:
         - layerConnectivities
     LayerConnectivities:
       type: array
+      minItems: 1
       description: >-
         Sequence of connectivity quality values in each of the layers in which
         the vertical space over the area determined by the `geohash` is
@@ -698,6 +699,7 @@ components:
         $ref: '#/components/schemas/Connectivity'
     LayerSignalStrengths:
       type: array
+      minItems: 1
       description: >-
         Predicted signal strength values in dBm for each layer. This array is optional
         and will only be present if the `includeSignalStrength` parameter was set to true
@@ -743,9 +745,10 @@ components:
         Problem with the client request. In addition to regular scenario of
         `INVALID_ARGUMENT`, `INVALID_CREDENTIAL`, `INVALID_TOKEN`, another scenarios may exist:
           - The area is not a polygon shape or has an arbitrary complexity ("code": "PREDICTIVE_CONNECTIVITY_DATA.INVALID_AREA", "message": "The area is not a polygon shape or has an arbitrary complexity")
-          - Indicated `startTime` is greater than the maximum allowed ("code": "PREDICTIVE_CONNECTIVITY_DATA.MAX_STARTDATE_EXCEEDED", "message": "Indicated startTime is greater than the maximum allowed")
-          - Indicated `startTime` is earlier than the minimum allowed ("code": "PREDICTIVE_CONNECTIVITY_DATA.MIN_STARTDATE_EXCEEDED", "message": "Indicated startTime is earlier than the minimum allowed")
-          - Indicated `endTime` is earlier than the `startTime` ("code": "PREDICTIVE_CONNECTIVITY_DATA.INVALID_END_DATE", "message": "Indicated endTime is earlier than the startTime")
+          - Indicated `startTime` is greater than the maximum allowed ("code": "PREDICTIVE_CONNECTIVITY_DATA.MAX_STARTTIME_EXCEEDED", "message": "Indicated startTime is greater than the maximum allowed")
+          - Indicated `startTime` is earlier than the minimum allowed ("code": "PREDICTIVE_CONNECTIVITY_DATA.MIN_STARTTIME_EXCEEDED", "message": "Indicated startTime is earlier than the minimum allowed")
+          - Indicated `endTime` is earlier than the `startTime` ("code": "PREDICTIVE_CONNECTIVITY_DATA.INVALID_END_TIME", "message": "Indicated endTime is earlier than the startTime")
+          - Indicated time period is partially in the past and partially in the future ("code": "PREDICTIVE_CONNECTIVITY_DATA.INVALID_TIME_PERIOD", "message": "time period is partially in the past and partially in the future")
           - Indicated time period is greater than the maximum allowed (More than maximum hours between startTime and endTime) ("code": "PREDICTIVE_CONNECTIVITY_DATA.MAX_TIME_PERIOD_EXCEEDED", "message": "Indicated time period is greater than the maximum allowed (More than maximum hours between startTime and endTime)")
       headers:
         x-correlator:
@@ -804,7 +807,7 @@ components:
                 status: 400
                 code: PREDICTIVE_CONNECTIVITY_DATA.MAX_STARTTIME_EXCEEDED
                 message: Indicated startTime is greater than the maximum allowed
-            PREDICTIVE_CONNECTIVITY_DATA_400_MIN_STARTDATE_EXCEEDED:
+            PREDICTIVE_CONNECTIVITY_DATA_400_MIN_STARTTIME_EXCEEDED:
               value:
                 status: 400
                 code: PREDICTIVE_CONNECTIVITY_DATA.MIN_STARTTIME_EXCEEDED
@@ -850,7 +853,7 @@ components:
                   code:
                     enum:
                       - PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_REQUEST
-                      - POPULATION_DENSITY_DATA.UNSUPPORTED_PRECISION
+                      - PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_PRECISION
                       - PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_SYNC_RESPONSE
           examples:
             PREDICTIVE_CONNECTIVITY_DATA_422_UNSUPPORTED_REQUEST:
@@ -860,10 +863,10 @@ components:
                 message: >-
                   Indicated combination of area, time interval and precision is too big for both synchronous and
                   asynchronous processing
-            POPULATION_DENSITY_DATA_422_UNSUPPORTED_PRECISION:
+            PREDICTIVE_CONNECTIVITY_DATA_422_UNSUPPORTED_PRECISION:
               value:
                 status: 422
-                code: POPULATION_DENSITY_DATA.UNSUPPORTED_PRECISION
+                code: PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_PRECISION
                 message: >-
                   Indicated cell precision (Geohash length) is not supported
             PREDICTIVE_CONNECTIVITY_DATA_422_UNSUPPORTED_SYNC_RESPONSE:
