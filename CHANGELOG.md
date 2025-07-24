@@ -1,0 +1,51 @@
+# Changelog CAMARA Predictive Connectivity Data
+
+## Table of Contents
+- **[r1.1](#r11)**
+
+**Please be aware that the project will have frequent updates to the main branch. There are no compatibility guarantees associated with code in any branch, including main, until it has been released. For example, changes may be reverted before a release is published. For the best results, use the latest published release.**
+
+The below sections record the changes for each API version in each release as follows:
+* for the first release-candidate, all changes since the last public release
+* for subsequent release-candidate(s), only the delta to the previous release-candidate
+* for a public release, the consolidated changes since the previous public release
+
+# r1.1
+
+## Release Notes
+This release contains the definition and documentation of
+* predictive-connectivity-data v0.1.0-rc.1
+
+The API definition(s) are based on
+* Commonalities v0.6.0-rc.1
+* Identity and Consent Management v0.4.0-rc.1
+
+## predictive-connectivity-data v0.1rc1
+
+This is a release candidate for the CAMARA Meta Release Fall25 release of the Predictive Connectivity Data API, version v0.1rc1. It contains mainly alignments with the Commonalities v0.6.0-rc.1.
+
+- API definition **with inline documentation**:
+  - OpenAPI [YAML spec file](https://github.com/camaraproject/PredictiveConnectivityData/blob/r1.1/code/API_definitions/predictive-connectivity-data.yaml)
+  - [View it on ReDoc](https://redocly.github.io/redoc/?url=https://raw.githubusercontent.com/camaraproject/PredictiveConnectivityData/r1.1/code/API_definitions/predictive-connectivity-data.yaml&nocors)
+  - [View it on Swagger Editor](https://camaraproject.github.io/swagger-ui/?url=https://raw.githubusercontent.com/camaraproject/PredictiveConnectivityData/r1.1/code/API_definitions/predictive-connectivity-data.yaml)
+
+In the following there is the list of the modifications with respect to the previous release.
+
+### Added
+* Add precision, height and signal strenght to the wip version by @albertoramosmonagas in https://github.com/camaraproject/PredictiveConnectivityData/pull/25
+
+### Changed
+* Define first WIP version of Predictive Connectivity Data API by @albertoramosmonagas in https://github.com/camaraproject/PredictiveConnectivityData/pull/20
+* Align commonalities with v0.6-rc1 by @albertoramosmonagas in https://github.com/camaraproject/PredictiveConnectivityData/pull/21
+
+### Fixed
+* N/A
+
+### Removed
+* N/A
+
+### New Contributors
+* @hdamker made their first contribution in https://github.com/camaraproject/PredictiveConnectivityData/pull/3
+* @albertoramosmonagas made their first contribution in https://github.com/camaraproject/PredictiveConnectivityData/pull/5
+
+**Full Changelog**: https://github.com/camaraproject/PredictiveConnectivityData/commits/r1.1

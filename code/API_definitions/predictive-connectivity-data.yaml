@@ -16,13 +16,15 @@ info:
 
     # Relevant Definitions and concepts
 
-    * **AGL**: Means “Above Ground Level” and describes the vertical height
+    * **AGL**: Means "Above Ground Level" and describes the vertical height
     above the ground.
 
     * **Service Level**: Describes, in measurable terms, the quality of service
     a telecommunication provider furnishes a consumer within a given time period.
 
     * **Network Type**: Refers to the type of connectivity (4G/5G) for which to retrieve data.
+
+    * **Signal Strength**: Raw signal strength measurements in dBm that can be optionally included in the response when supported by the implementation.
 
     * **Notification URL and token**: Developers may provide a callback URL (`sink`) for receiving an async response.
     This is an optional parameter. If `sink` is included, it is RECOMMENDED for the client to provide as well the `sinkCredential`
@@ -33,8 +35,8 @@ info:
 
     # API Functionality
 
-    Once a developer specifies (1) the area as a polygon shape, (2) the service
-    level and (3) time interval in which they want to obtain the connectivity estimation,
+    Once a developer specifies (1) the area as a polygon shape, (2) a precision level, (3) the service
+    level and (4) time interval in which they want to obtain the connectivity estimation,
     the API returns a data set consisting of a sequence of time ranges, with each
     time range containing the input polygon subdivided into equal-sized grid cells.
 
@@ -45,6 +47,8 @@ info:
       - `MC`: Means marginal connectivity. Service level might not be met.
       - `NC`: Means no connectivity. Service level not met.
       - `ND`: No connectivity data.
+
+    Optionally, if supported by the implementation and requested by the client, raw signal strength values in dBm can also be returned for each layer.
 
     These values are calculated based on network data and/or prediction models trained on
     such data.
@@ -75,12 +79,12 @@ info:
 
     ## Error handling:
 
-    For requests with a combination of area, startTime and endTime
+    For requests with a combination of area, precision, startTime and endTime
     properties involving an amount of processing that cannot be processed
     synchronously, the API returns the error response
     PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_SYNC_RESPONSE.
 
-    For requests with a combination of area, startTime and endTime
+    For requests with a combination of area, precision, startTime and endTime
     properties too big for both synchronous and asynchronous processing, the API
     returns the error response PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_REQUEST.
 
@@ -89,7 +93,7 @@ info:
     as an error cannot be returned in the callback. The callback will also
     include the statusInfo property to add extra information about the error.
 
-    NOTE: In case the property “Technology” is not included, the quality of connectivity
+    NOTE: In case the property "Technology" is not included, the quality of connectivity
     will be returned considering both 4G and 5G networks.
 
     # Resources and Operations overview
@@ -120,13 +124,13 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
-  version: wip
+  version: 0.1.0-rc.1
   x-camara-commonalities: 0.6
 externalDocs:
-  description: Product documentation at Camara.
-  url: https://github.com/camaraproject/
+  description: Product documentation at CAMARA.
+  url: https://github.com/camaraproject/PredictiveConnectivityData
 servers:
-  - url: "{apiRoot}/predictive-connectivity-data/vwip"
+  - url: "{apiRoot}/predictive-connectivity-data/v0.1rc1"
     variables:
       apiRoot:
         default: https://localhost:9091
@@ -143,7 +147,8 @@ paths:
       description: >-
         Retrieves the connectivity for a concrete area, specifying the
         required service level that has to be met in the whole area in the
-        requested network type/s.
+        requested network type/s. Optionally, raw signal strength values can
+        be included in the response if supported by the implementation.
       operationId: retrieveConnectivity
       security:
         - openId:
@@ -155,6 +160,38 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RetrieveConnectivityRequest'
+            examples:
+              RetrieveConnectivityRequestWithHeight:
+                summary: Request with specified height
+                value:
+                  serviceLevel: C2
+                  area:
+                    areaType: POLYGON
+                    boundary:
+                      - latitude: 50.735851
+                        longitude: 7.10066
+                      - latitude: 50.74
+                        longitude: 7.11
+                      - latitude: 50.73
+                        longitude: 7.12
+                  startTime: "2024-01-03T11:00:00Z"
+                  endTime: "2024-01-03T12:00:00Z"
+                  height: 50
+              RetrieveConnectivityRequestWithoutHeight:
+                summary: Request without specified height
+                value:
+                  serviceLevel: C2
+                  area:
+                    areaType: POLYGON
+                    boundary:
+                      - latitude: 50.735851
+                        longitude: 7.10066
+                      - latitude: 50.74
+                        longitude: 7.11
+                      - latitude: 50.73
+                        longitude: 7.12
+                  startTime: "2024-01-03T11:00:00Z"
+                  endTime: "2024-01-03T12:00:00Z"
         required: true
       responses:
         '200':
@@ -169,10 +206,14 @@ paths:
               examples:
                 ConnectivityDataSupportedAreaResponseExample:
                   $ref: '#/components/examples/ConnectivityDataSupportedAreaResponseExample'
+                ConnectivityDataWithSignalStrengthResponseExample:
+                  $ref: '#/components/examples/ConnectivityDataWithSignalStrengthResponseExample'
                 ConnectivityDataPartOfAreaNotSupportedResponseExample:
                   $ref: "#/components/examples/ConnectivityDataPartOfAreaNotSupportedResponseExample"
                 ConnectivityDataAreaNotSupportedResponseExample:
                   $ref: "#/components/examples/ConnectivityDataAreaNotSupportedResponseExample"
+                ConnectivityDataSupportedAreaResponseWithHeightExample:
+                  $ref: '#/components/examples/ConnectivityDataSupportedAreaResponseWithHeightExample'
         '202':
           description: Connectivity data requested. This response is returned when the behaviour of the API is asynchronous.
           headers:
@@ -204,7 +245,11 @@ paths:
                 connectivity data retrieval request.
               operationId: connectivityCallback
               parameters:
-                - $ref: '#/components/parameters/x-correlator'
+                - name: x-correlator
+                  in: header
+                  description: Correlation id for the different services.
+                  schema:
+                    $ref: '#/components/schemas/XCorrelator'
               requestBody:
                 content:
                   application/json:
@@ -275,6 +320,31 @@ components:
             2023-07-03T14:27:08.312+02:00 or 2023-07-03T12:27:08.312Z).
         networkType:
           $ref: '#/components/schemas/NetworkType'
+        precision:
+          type: integer
+          description: >-
+            Precision required of response cells. Precision defines a geohash level and corresponds to the length of the geohash for each cell. More information at [Geohash system](https://en.wikipedia.org/wiki/Geohash)"
+            If not included the default precision level 7 is used by default. In case of using a not supported level by the MNO, the API returns the error response `PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_PRECISION`.
+          minimum: 1
+          maximum: 12
+          default: 7
+        height:
+          description: >-
+            Requested prediction height in metres above ground level.
+            If a prediction height is specified, the response will include only the connectivity data for the layer containing that height.
+            If no prediction height is specified, the response will include available prediction for all heights.
+          type: integer
+          minimum: 0
+          maximum: 250
+        includeSignalStrength:
+          type: boolean
+          description: >-
+            Optional parameter to request raw signal strength values in dBm for each layer.
+            If set to true and supported by the implementation, the response will include
+            signal strength data alongside connectivity quality information. If not supported
+            by the implementation, this parameter will be ignored and only connectivity
+            quality will be returned.
+          default: false
         sink:
           type: string
           format: uri
@@ -488,7 +558,7 @@ components:
         timedConnectivityData:
           type: array
           description: >-
-             Time ranges along with the connectibity data for the cells within it.
+             Time ranges along with the connectivity data for the cells within it.
              The request startTime or the request endTime have to be fully covered by the intervals.
              For example, if the intervals are 1-hour long and the input date range were [2024-01-03T11:25:00Z
              to 2024-01-03T12:45:00Z] it would contain 2 intervals (Interval from 2024-01-03T11:00:00Z
@@ -501,6 +571,11 @@ components:
           type: string
           description: Information about the status, mandatory when property `status` is `OPERATION_NOT_COMPLETED` for adding extra information about the error.
           example: Some error happened during the processing of the request
+        requestedHeight:
+          type: integer
+          description: The height in metres above ground level that was requested in the request. This property is only present if a specific height was requested.
+          nullable: true
+          example: 50
       required:
         - layerThickness
         - timedConnectivityData
@@ -591,16 +666,19 @@ components:
           description: >-
             Coordinates of the cell represented as a string using the [Geohash
             system](https://en.wikipedia.org/wiki/Geohash), encoding a
-            geographic location into a short string. The value length, and thus
-            the cell granularity, is determined by the implementation.
+            geographic location into a short string. The value length,
+            and thus, the cell granularity, is determined by the request body property `precision`.
           example: ezdmemd
         layerConnectivities:
           $ref: '#/components/schemas/LayerConnectivities'
+        layerSignalStrengths:
+          $ref: '#/components/schemas/LayerSignalStrengths'
       required:
         - geohash
         - layerConnectivities
     LayerConnectivities:
       type: array
+      minItems: 1
       description: >-
         Sequence of connectivity quality values in each of the layers in which
         the vertical space over the area determined by the `geohash` is
@@ -609,7 +687,7 @@ components:
         ground (First layer will start at 0 meters AGL). So the layer at
         index = N would comprise the heights, referenced to AGL, among N *
         `layerThickness` meters and (N+1) * `layerThickness` meters.
-
+        If a specific height was requested, this array will contain only one element corresponding to the connectivity for the layer at that height.
 
         The possible connectivity values are:
           - GC: Means good connectivity. Service level met even in unfavorable conditions.
@@ -621,6 +699,25 @@ components:
         and `networkType` specified in the request.
       items:
         $ref: '#/components/schemas/Connectivity'
+    LayerSignalStrengths:
+      type: array
+      minItems: 1
+      description: >-
+        Predicted signal strength values in dBm for each layer. This array is optional
+        and will only be present if the `includeSignalStrength` parameter was set to true
+        in the request and is supported by the implementation. The array follows the same
+        structure as `layerConnectivities`, with each element corresponding to the signal
+        strength in dBm for the same layer index. All layers are considered having the same
+        `layerThickness` meters and are ordered consecutively starting from the ground
+        (First layer starts at 0 meters AGL). A null value indicates no signal strength
+        data is available for that layer.
+        If a specific height was requested, this array will contain only one element corresponding to the signal strength for the layer at that height.
+      items:
+        type: number
+        format: float
+        nullable: true
+        description: Signal strength value in dBm, or null if no data is available
+        example: -85.5
     Connectivity:
       type: string
       enum:
@@ -650,9 +747,10 @@ components:
         Problem with the client request. In addition to regular scenario of
         `INVALID_ARGUMENT`, `INVALID_CREDENTIAL`, `INVALID_TOKEN`, another scenarios may exist:
           - The area is not a polygon shape or has an arbitrary complexity ("code": "PREDICTIVE_CONNECTIVITY_DATA.INVALID_AREA", "message": "The area is not a polygon shape or has an arbitrary complexity")
-          - Indicated `startTime` is greater than the maximum allowed ("code": "PREDICTIVE_CONNECTIVITY_DATA.MAX_STARTDATE_EXCEEDED", "message": "Indicated startTime is greater than the maximum allowed")
-          - Indicated `startTime` is earlier than the minimum allowed ("code": "PREDICTIVE_CONNECTIVITY_DATA.MIN_STARTDATE_EXCEEDED", "message": "Indicated startTime is earlier than the minimum allowed")
-          - Indicated `endTime` is earlier than the `startTime` ("code": "PREDICTIVE_CONNECTIVITY_DATA.INVALID_END_DATE", "message": "Indicated endTime is earlier than the startTime")
+          - Indicated `startTime` is greater than the maximum allowed ("code": "PREDICTIVE_CONNECTIVITY_DATA.MAX_STARTTIME_EXCEEDED", "message": "Indicated startTime is greater than the maximum allowed")
+          - Indicated `startTime` is earlier than the minimum allowed ("code": "PREDICTIVE_CONNECTIVITY_DATA.MIN_STARTTIME_EXCEEDED", "message": "Indicated startTime is earlier than the minimum allowed")
+          - Indicated `endTime` is earlier than the `startTime` ("code": "PREDICTIVE_CONNECTIVITY_DATA.INVALID_END_TIME", "message": "Indicated endTime is earlier than the startTime")
+          - Indicated time period is partially in the past and partially in the future ("code": "PREDICTIVE_CONNECTIVITY_DATA.INVALID_TIME_PERIOD", "message": "time period is partially in the past and partially in the future")
           - Indicated time period is greater than the maximum allowed (More than maximum hours between startTime and endTime) ("code": "PREDICTIVE_CONNECTIVITY_DATA.MAX_TIME_PERIOD_EXCEEDED", "message": "Indicated time period is greater than the maximum allowed (More than maximum hours between startTime and endTime)")
       headers:
         x-correlator:
@@ -711,7 +809,7 @@ components:
                 status: 400
                 code: PREDICTIVE_CONNECTIVITY_DATA.MAX_STARTTIME_EXCEEDED
                 message: Indicated startTime is greater than the maximum allowed
-            PREDICTIVE_CONNECTIVITY_DATA_400_MIN_STARTDATE_EXCEEDED:
+            PREDICTIVE_CONNECTIVITY_DATA_400_MIN_STARTTIME_EXCEEDED:
               value:
                 status: 400
                 code: PREDICTIVE_CONNECTIVITY_DATA.MIN_STARTTIME_EXCEEDED
@@ -739,6 +837,7 @@ components:
         Problem with the client request. In addition to regular scenario of
         `INVALID_ARGUMENT`, another scenarios may exist:
           - Indicated request is too big for both synchronous and asynchronous processing ("code": "PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_REQUEST", "message": "The indicated request is too big for both synchronous and asynchronous processing")
+          - Indicated cell precision (Geohash level) is not supported ("code": "PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_PRECISION", "message": "Indicated cell precision (Geohash level) is not supported")
           - Indicated request is too big for synchronous processing and asynchronous processing is not enabled ("code": "PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_SYNC_RESPONSE", "message": "The indicated request is too big for synchronous processing and asynchronous processing is not enabled")
       headers:
         x-correlator:
@@ -756,6 +855,7 @@ components:
                   code:
                     enum:
                       - PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_REQUEST
+                      - PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_PRECISION
                       - PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_SYNC_RESPONSE
           examples:
             PREDICTIVE_CONNECTIVITY_DATA_422_UNSUPPORTED_REQUEST:
@@ -763,14 +863,20 @@ components:
                 status: 422
                 code: PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_REQUEST
                 message: >-
-                  The indicated request is too big for both synchronous and
+                  Indicated combination of area, time interval and precision is too big for both synchronous and
                   asynchronous processing
+            PREDICTIVE_CONNECTIVITY_DATA_422_UNSUPPORTED_PRECISION:
+              value:
+                status: 422
+                code: PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_PRECISION
+                message: >-
+                  Indicated cell precision (Geohash length) is not supported
             PREDICTIVE_CONNECTIVITY_DATA_422_UNSUPPORTED_SYNC_RESPONSE:
               value:
                 status: 422
                 code: PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_SYNC_RESPONSE
                 message: >-
-                  The indicated request is too big for synchronous processing
+                  Indicated combination of area, time interval and precision is too big for synchronous processing
                   and asynchronous processing is not enabled
     Generic400:
       description: Problem with the client request
@@ -1008,8 +1114,8 @@ components:
                   - NC
                   - NC
                   - NC
-          - startTime: "2024-01-03T11:00:00Z"
-            endTime: "2024-01-03T12:00:00Z"
+          - startTime: "2024-01-03T13:00:00Z"
+            endTime: "2024-01-03T14:00:00Z"
             cellConnectivityData:
               - geohash: ezdmemd
                 layerConnectivities:
@@ -1064,8 +1170,8 @@ components:
                   - NC
                   - NC
                   - NC
-          - startTime: "2024-01-03T11:00:00Z"
-            endTime: "2024-01-03T12:00:00Z"
+          - startTime: "2024-01-03T12:00:00Z"
+            endTime: "2024-01-03T13:00:00Z"
             cellConnectivityData:
               - geohash: ezdmemd
                 layerConnectivities:
@@ -1096,3 +1202,64 @@ components:
         status: OPERATION_NOT_COMPLETED
         statusInfo: Some error happened during the processing of the request
         operationId: 2322f362-eaab-4cf3-86d2-efcbdf3a7cb4
+    ConnectivityDataWithSignalStrengthResponseExample:
+      value:
+        layerThickness: 30
+        timedConnectivityData:
+          - startTime: "2024-01-03T11:00:00Z"
+            endTime: "2024-01-03T12:00:00Z"
+            cellConnectivityData:
+              - geohash: ezdmemd
+                layerConnectivities:
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - NC
+                  - NC
+                  - NC
+                layerSignalStrengths:
+                  - -85.5
+                  - -84.0
+                  - -83.0
+                  - -82.0
+                  - -81.0
+                  - null
+                  - null
+                  - null
+              - geohash: ezdmemc
+                layerConnectivities:
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - GC
+                  - NC
+                  - NC
+                  - NC
+                layerSignalStrengths:
+                  - -85.5
+                  - -84.0
+                  - -83.0
+                  - -82.0
+                  - -81.0
+                  - -81.5
+                  - -81.0
+                  - -85.0
+        status: SUPPORTED_AREA
+    ConnectivityDataSupportedAreaResponseWithHeightExample:
+      value:
+        layerThickness: 30
+        timedConnectivityData:
+          - startTime: "2024-01-03T11:00:00Z"
+            endTime: "2024-01-03T12:00:00Z"
+            cellConnectivityData:
+              - geohash: ezdmemd
+                layerConnectivities:
+                  - GC
+              - geohash: ezdmemc
+                layerConnectivities:
+                  - GC
+        status: SUPPORTED_AREA
+        requestedHeight: 50
