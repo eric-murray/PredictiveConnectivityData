@@ -1,4 +1,4 @@
-Feature: CAMARA Predictive Connectivity Data API, v0.1.0-rc.1
+Feature: CAMARA Predictive Connectivity Data API, vwip
     # Input to be provided by the implementation to the tester
     #
     # Implementation indications:
@@ -21,7 +21,7 @@ Feature: CAMARA Predictive Connectivity Data API, v0.1.0-rc.1
 
     Background: Common retrieveConnectivity setup
         Given an environment at "apiRoot"
-        And the resource "/predictive-connectivity-data/v0.1rc1/retrieve"
+        And the resource "/predictive-connectivity-data/vwip/retrieve"
         And the header "Content-Type" is set to "application/json"
         And the header "Authorization" is set to a valid access token
         And the header "x-correlator" complies with the schema at "#/components/schemas/XCorrelator"
