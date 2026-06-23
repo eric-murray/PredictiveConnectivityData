@@ -497,7 +497,7 @@ components:
       required:
         - operationId
     ConnectivityDataAsyncResponse:
-      description: Aysnchronous connectivity data response
+      description: Asynchronous connectivity data response
       allOf:
         - $ref: '#/components/schemas/ConnectivityDataResponse'
         - type: object
