@@ -793,7 +793,7 @@ components:
                 message: The service level provided is not supported
   examples:
     ConnectivityDataSupportedAreaResponseExample:
-      description: Connectivity data supported area aesponse example
+      description: Connectivity data supported area response example
       value:
         layerThickness: 30
         timedConnectivityData:
