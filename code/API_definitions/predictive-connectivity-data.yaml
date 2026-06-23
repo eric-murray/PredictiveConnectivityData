@@ -490,7 +490,7 @@ components:
         - status
     AcceptedAsyncResponse:
       type: object
-      description: Accepted aysnchronous response
+      description: Accepted asynchronous response
       properties:
         operationId:
           $ref: '#/components/schemas/OperationId'
