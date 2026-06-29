@@ -24,14 +24,14 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
     And the resource "/predictive-connectivity-data/vwip/retrieve"
     And the header "Content-Type" is set to "application/json"
     And the header "Authorization" is set to a valid access token
-    And the header "x-correlator" complies with the schema at "#/components/schemas/XCorrelator"
+    And the header "x-correlator" complies with the schema at "../common/CAMARA_common.yaml#/components/schemas/XCorrelator"
     And the request body is set by default to a request body compliant with the schema
 
   # Happy path scenarios
 
-  @predictive_connectivity_data_01_supported_area_success_scenario
+  @predictive_connectivity_data_01_polygon_supported_area_success_scenario
   Scenario: Validate success response for a supported area request
-    Given the request body property "$.area" is set to a valid testing area within supported regions
+    Given the request body property "$.area" is set to a valid testing POLYGON area within supported regions
     And the request body properties "$.startTime" and "$.endTime" are valid future date-times, with "$.endTime" later than "$.startTime"
     And the request body property "$.serviceLevel" is set to a valid communication service level
     When the request "retrieveConnectivity" is sent
@@ -45,9 +45,9 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
     And all the items in response property "$.timedConnectivityData[*].cellConnectivityData[*].layerConnectivities[*]" are equal to "GC", "MC" or "NC"
     And the response property "$.timedConnectivityData[*].cellConnectivityData[*].layerSignalStrengths" is not included in the response
 
-  @predictive_connectivity_data_02_partial_area_success_scenario
+  @predictive_connectivity_data_02_polygon_partial_area_success_scenario
   Scenario: Validate success response for a partial supported area request
-    Given the request body property "$.area" is set to a valid testing area partially within supported regions
+    Given the request body property "$.area" is set to a valid testing POLYGON area partially within supported regions
     And the request body properties "$.startTime" and "$.endTime" are valid future date-times, with "$.endTime" later than "$.startTime"
     And the request body property "$.serviceLevel" is set to a valid communication service level
     When the request "retrieveConnectivity" is sent
@@ -62,9 +62,9 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
     And the response property "$.timedConnectivityData[*].cellConnectivityData[*].layerConnectivities" is not empty
     And the response property "$.timedConnectivityData[*].cellConnectivityData[*].layerSignalStrengths" is not included in the response
 
-  @predictive_connectivity_data_03_not_supported_area_success_scenario
+  @predictive_connectivity_data_03_polygon_not_supported_area_success_scenario
   Scenario: Validate success response for unsupported area request
-    Given the request body property "$.area" is set to a valid testing area outside supported regions
+    Given the request body property "$.area" is set to a valid testing POLYGON area outside supported regions
     And the request body properties "$.startTime" and "$.endTime" are valid future date-times, with "$.endTime" later than "$.startTime"
     And the request body property "$.serviceLevel" is set to a valid communication service level
     When the request "retrieveConnectivity" is sent
@@ -75,7 +75,60 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
     And the response property "$.status" value is "AREA_NOT_SUPPORTED"
     And the response property "$.timedConnectivityData" is an empty array
 
-  @predictive_connectivity_data_04_async_success_scenario
+  @predictive_connectivity_data_04_geohashlist_supported_area_success_scenario
+  Scenario: Validate success response for a supported area request defined as a list of geohashes
+    Given the request body property "$.area.areaType" is set to "GEOHASHLIST"
+    And the request body property "$.area.geohashes" is set to a list of valid geohashes within supported area
+    And the request body property "$.precision" is not included
+    And the request body properties "$.startTime" and "$.endTime" are valid future date-times, with "$.endTime" later than "$.startTime"
+    And the request body property "$.serviceLevel" is set to a valid communication service level
+    When the request "retrieveConnectivity" is sent
+    Then the response status code is 200
+    And the response header "Content-Type" is "application/json"
+    And the response header "x-correlator" has same value as the request header "x-correlator"
+    And the response body complies with the OAS schema at "/components/schemas/ConnectivityDataResponse"
+    And the response property "$.status" value is "SUPPORTED_AREA"
+    And the response property "$.timedConnectivityData" intervals fully cover the requested time range from "$.startTime" to "$.endTime"
+    And the response property "$.timedConnectivityData[*].cellConnectivityData[*]" contains one cell per geohash in the request property "$.area.geohashes"
+    And the response property "$.timedConnectivityData[*].cellConnectivityData[*].geohash" is a valid Geohash present in the request property "$.area.geohashes"
+    And all the items in response property "$.timedConnectivityData[*].cellConnectivityData[*].layerConnectivities[*]" are equal to "GC", "MC" or "NC"
+    And the response property "$.timedConnectivityData[*].cellConnectivityData[*].layerSignalStrengths" is not included in the response
+
+  @predictive_connectivity_data_05_geohashlist_partial_area_success_scenario
+  Scenario: Validate success response for a list of geohashes partially within supported regions
+    Given the request body property "$.area.areaType" is set to "GEOHASHLIST"
+    And the request body property "$.area.geohashes" is set to a list of valid geohashes partially within supported regions
+    And the request body property "$.precision" is not included
+    And the request body properties "$.startTime" and "$.endTime" are valid future date-times, with "$.endTime" later than "$.startTime"
+    And the request body property "$.serviceLevel" is set to a valid communication service level
+    When the request "retrieveConnectivity" is sent
+    Then the response status code is 200
+    And the response header "Content-Type" is "application/json"
+    And the response header "x-correlator" has same value as the request header "x-correlator"
+    And the response body complies with the OAS schema at "/components/schemas/ConnectivityDataResponse"
+    And the response property "$.status" value is "PART_OF_AREA_NOT_SUPPORTED"
+    And the response property "$.timedConnectivityData" intervals fully cover the requested time range from "$.startTime" to "$.endTime"
+    And there is at least one item in response property "$.timedConnectivityData[*].cellConnectivityData[*]"
+    And that item has the array property "$.timedConnectivityData[*].cellConnectivityData[*].layerConnectivities[*]" containing only "ND" values
+    And the response property "$.timedConnectivityData[*].cellConnectivityData[*].layerConnectivities" is not empty
+    And the response property "$.timedConnectivityData[*].cellConnectivityData[*].layerSignalStrengths" is not included in the response
+
+  @predictive_connectivity_data_06_geohashlist_not_supported_area_success_scenario
+  Scenario: Validate success response for a list of geohashes entirely outside supported regions
+    Given the request body property "$.area.areaType" is set to "GEOHASHLIST"
+    And the request body property "$.area.geohashes" is set to a list of valid geohashes outside supported regions
+    And the request body property "$.precision" is not included
+    And the request body properties "$.startTime" and "$.endTime" are valid future date-times, with "$.endTime" later than "$.startTime"
+    And the request body property "$.serviceLevel" is set to a valid communication service level
+    When the request "retrieveConnectivity" is sent
+    Then the response status code is 200
+    And the response header "Content-Type" is "application/json"
+    And the response header "x-correlator" has same value as the request header "x-correlator"
+    And the response body complies with the OAS schema at "/components/schemas/ConnectivityDataResponse"
+    And the response property "$.status" value is "AREA_NOT_SUPPORTED"
+    And the response property "$.timedConnectivityData" is an empty array
+
+  @predictive_connectivity_data_07_async_success_scenario
   Scenario: Validate success async response for a request when sink is provided
     # Property "$.sink" is set with a valid public accessible HTTPs endpoint
     Given the request body property "$.area" is set to a valid testing area within supported regions
@@ -92,7 +145,7 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
     And the request will have header "Authorization" set to "Bearer " + the value of the request property "$.sinkCredential.accessToken"
     And the request body complies with the OAS schema at "/components/schemas/ConnectivityDataAsyncResponse"
 
-  @predictive_connectivity_data_05_async_operation_not_completed_scenario
+  @predictive_connectivity_data_08_async_operation_not_completed_scenario
   Scenario: Validate async callback when operation fails
     # Property "$.sink" is set with a valid public accessible HTTPs endpoint
     Given the request body property "$.area" is set to a valid testing area within supported regions
@@ -111,9 +164,9 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
     And the request body complies with the OAS schema at "/components/schemas/ConnectivityDataAsyncResponse"
     And the request body will have property "$.status" equal to "OPERATION_NOT_COMPLETED" and includes property "$.statusInfo"
 
-  @predictive_connectivity_data_06_custom_precision_success_scenario
+  @predictive_connectivity_data_09_custom_precision_success_scenario
   Scenario: Validate success response for a request specifying the precision of the geohashes
-    Given the request body property "$.area" is set to a valid testing area within supported regions
+    Given the request body property "$.area" is set to a valid testing POLYGON area within supported regions
     And the request body properties "$.startTime" and "$.endTime" are valid future date-times, with "$.endTime" later than "$.startTime"
     And the request body property "$.serviceLevel" is set to a valid communication service level
     And the request body property "$.precision" is set to a valid precision for the geohash response cells
@@ -123,7 +176,7 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
     And the response header "x-correlator" has same value as the request header "x-correlator"
     And the response body complies with the OAS schema at "/components/schemas/ConnectivityDataResponse"
 
-  @predictive_connectivity_data_07_concrete_network_type_success_scenario
+  @predictive_connectivity_data_10_concrete_network_type_success_scenario
   Scenario: Validate success response for a request specifying the network type for which the connectivity data is to be obtained
     Given the request body property "$.area" is set to a valid testing area within supported regions
     And the request body properties "$.startTime" and "$.endTime" are valid future date-times, with "$.endTime" later than "$.startTime"
@@ -135,7 +188,7 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
     And the response header "x-correlator" has same value as the request header "x-correlator"
     And the response body complies with the OAS schema at "/components/schemas/ConnectivityDataResponse"
 
-  @predictive_connectivity_data_08_concrete_height_success_scenario
+  @predictive_connectivity_data_11_concrete_height_success_scenario
   Scenario: Validate success response for a request specifying the height for which the connectivity data is to be obtained
     Given the request body property "$.area" is set to a valid testing area within supported regions
     And the request body properties "$.startTime" and "$.endTime" are valid future date-times, with "$.endTime" later than "$.startTime"
@@ -150,7 +203,7 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
     And the response property "$.requestedHeight" is equal to the request property "$.height"
 
   # If signal strength is not supported by the implementation this scenario will not apply. Therefore the request body property "$.includeSignalStrength" will be ignored and only connectivity quality will be returned.
-  @predictive_connectivity_data_09_include_signal_strength
+  @predictive_connectivity_data_12_include_signal_strength
   Scenario: Validate success response for a request including signal strength
     Given the request body property "$.area" is set to a valid testing area within supported regions
     And the request body properties "$.startTime" and "$.endTime" are valid future date-times, with "$.endTime" later than "$.startTime"
@@ -165,7 +218,7 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
     And the response property "$.timedConnectivityData[*].cellConnectivityData[*].layerConnectivities[*]" is not empty
     And the response property "$.timedConnectivityData[*].cellConnectivityData[*]" have properties "layerConnectivities[*]" and "layerSignalStrengths[*]" having the same length
 
-  @predictive_connectivity_data_10_supported_area_past_success_scenario
+  @predictive_connectivity_data_13_supported_area_past_success_scenario
   Scenario: Validate success response for a supported area in a past time period request
     Given the request body property "$.area" is set to a valid testing area within supported regions
     And the request body properties "$.startTime" and "$.endTime" are valid past date-times, with "$.endTime" later than "$.startTime"
@@ -198,6 +251,7 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
     Examples:
       | required_property |
       | $.area            |
+      | $.area.areaType   |
       | $.startTime       |
       | $.endTime         |
       | $.serviceLevel    |
@@ -219,7 +273,7 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
 
   @predictive_connectivity_data_400.03_invalid_service_level
   Scenario: Error 400 when serviceLevel has not a valid value
-    Given the request body property "$.serviceLevel" is not set to "C2" or "STREAM_4K"
+    Given the request body property "$.serviceLevel" is not set to "C2", "STREAM_4K" or "BEST_EFFORT"
     When the request "retrieveConnectivity" is sent
     Then the response status code is 400
     And the response header "Content-Type" is "application/json"
@@ -229,7 +283,8 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
 
   @predictive_connectivity_data_400.04_invalid_precision
   Scenario: Error 400 when precision is not a number between 1 and 12
-    Given the request body property "$.precision" is not set to a number between 1 and 12
+    Given the request body property "$.area.areaType" is set to "POLYGON"
+    And the request body property "$.precision" is not set to a number between 1 and 12
     When the request "retrieveConnectivity" is sent
     Then the response status code is 400
     And the response header "Content-Type" is "application/json"
@@ -257,17 +312,24 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
     And the response property "$.code" is "INVALID_ARGUMENT"
     And the response property "$.message" contains a user friendly text
 
-  # PLAIN and REFRESHTOKEN are considered in the schema so INVALID_ARGUMENT is not expected
+  # Only "ACCESSTOKEN" and "PRIVATE_KEY_JWT" are considered in the SinkCredential schema, so a value outside that set
+  # may be rejected by the business logic as INVALID_CREDENTIAL or by a generic schema validator as INVALID_ARGUMENT,
+  # and both could be accepted
   @predictive_connectivity_data_400.07_invalid_sink_credential
-  Scenario: Invalid credential
-    Given the request body property "$.sinkCredential.credentialType" is not set to "ACCESSTOKEN"
+  Scenario Outline: Invalid credential
+    Given the request body property "$.sinkCredential.credentialType" is set to "<unsupported_credential_type>"
     When the request "retrieveConnectivity" is sent
     Then the response status code is 400
     And the response header "x-correlator" has same value as the request header "x-correlator"
     And the response header "Content-Type" is "application/json"
     And the response property "$.status" is 400
-    And the response property "$.code" is "INVALID_CREDENTIAL"
+    And the response property "$.code" is "INVALID_CREDENTIAL" or "INVALID_ARGUMENT"
     And the response property "$.message" contains a user friendly text
+
+    Examples:
+      | unsupported_credential_type |
+      | PLAIN                       |
+      | REFRESHTOKEN                |
 
   # Only "bearer" is considered in the schema so a generic schema validator may fail and generate a 400 INVALID_ARGUMENT without further distinction,
   # and both could be accepted
@@ -366,6 +428,94 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
     And the response property "$.code" is "PREDICTIVE_CONNECTIVITY_DATA.INVALID_TIME_PERIOD"
     And the response property "$.message" contains a user friendly text
 
+  @predictive_connectivity_data_400.17_precision_with_geohashlist
+  Scenario: Error 400 when precision is included together with a GEOHASHLIST area
+    Given the request body property "$.area.areaType" is set to "GEOHASHLIST"
+    And the request body property "$.area.geohashes" is set to a list of valid geohashes within supported regions
+    And the request body property "$.precision" is included
+    When the request "retrieveConnectivity" is sent
+    Then the response status code is 400
+    And the response header "Content-Type" is "application/json"
+    And the response property "$.status" is 400
+    And the response property "$.code" is "INVALID_ARGUMENT"
+    And the response property "$.message" contains a user friendly text
+
+  @predictive_connectivity_data_400.18_invalid_geohash_format
+  Scenario: Error 400 when a geohash in the list does not comply with the Geohash format
+    Given the request body property "$.area.areaType" is set to "GEOHASHLIST"
+    And the request body property "$.area.geohashes" contains a value that does not comply with the schema at "/components/schemas/Geohash"
+    When the request "retrieveConnectivity" is sent
+    Then the response status code is 400
+    And the response header "Content-Type" is "application/json"
+    And the response property "$.status" is 400
+    And the response property "$.code" is "INVALID_ARGUMENT"
+    And the response property "$.message" contains a user friendly text
+
+  @predictive_connectivity_data_400.19_unexpected_property
+  Scenario: Error 400 when the request body contains a property not defined in the schema
+    Given the request body contains a property not defined in the schema
+    When the request "retrieveConnectivity" is sent
+    Then the response status code is 400
+    And the response header "Content-Type" is "application/json"
+    And the response property "$.status" is 400
+    And the response property "$.code" is "INVALID_ARGUMENT"
+    And the response property "$.message" contains a user friendly text
+
+  @predictive_connectivity_data_400.20_schema_not_compliant
+  Scenario: Error 400 when the request body does not comply with the schema
+    Given the request body is not compliant with the OAS schema at "/components/schemas/RetrieveConnectivityRequest"
+    When the request "retrieveConnectivity" is sent
+    Then the response status code is 400
+    And the response header "x-correlator" has same value as the request header "x-correlator"
+    And the response header "Content-Type" is "application/json"
+    And the response property "$.status" is 400
+    And the response property "$.code" is "INVALID_ARGUMENT"
+    And the response property "$.message" contains a user friendly text
+
+  @predictive_connectivity_data_400.21_no_request_body
+  Scenario: Error 400 when the request body is not provided
+    Given the request body is not included
+    When the request "retrieveConnectivity" is sent
+    Then the response status code is 400
+    And the response header "x-correlator" has same value as the request header "x-correlator"
+    And the response header "Content-Type" is "application/json"
+    And the response property "$.status" is 400
+    And the response property "$.code" is "INVALID_ARGUMENT"
+    And the response property "$.message" contains a user friendly text
+
+  @predictive_connectivity_data_400.22_empty_request_body
+  Scenario: Error 400 when the request body is an empty object
+    Given the request body is set to "{}"
+    When the request "retrieveConnectivity" is sent
+    Then the response status code is 400
+    And the response header "x-correlator" has same value as the request header "x-correlator"
+    And the response header "Content-Type" is "application/json"
+    And the response property "$.status" is 400
+    And the response property "$.code" is "INVALID_ARGUMENT"
+    And the response property "$.message" contains a user friendly text
+
+  @predictive_connectivity_data_400.23_empty_area_property
+  Scenario: Error 400 when the area property is an empty object
+    Given the request body property "$.area" is set to an empty object
+    When the request "retrieveConnectivity" is sent
+    Then the response status code is 400
+    And the response header "x-correlator" has same value as the request header "x-correlator"
+    And the response header "Content-Type" is "application/json"
+    And the response property "$.status" is 400
+    And the response property "$.code" is "INVALID_ARGUMENT"
+    And the response property "$.message" contains a user friendly text
+
+  # The x-correlator sent in the request is invalid, so the response is not expected to echo it back
+  @predictive_connectivity_data_400.24_invalid_x_correlator
+  Scenario: Error 400 when the x-correlator header does not comply with the schema
+    Given the request header "x-correlator" is not compliant with the schema at "../common/CAMARA_common.yaml#/components/schemas/XCorrelator"
+    When the request "retrieveConnectivity" is sent
+    Then the response status code is 400
+    And the response header "Content-Type" is "application/json"
+    And the response property "$.status" is 400
+    And the response property "$.code" is "INVALID_ARGUMENT"
+    And the response property "$.message" contains a user friendly text
+
   # Error 401 scenarios
 
   @predictive_connectivity_data_401.01_expired_access_token
@@ -419,7 +569,8 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
 
   @predictive_connectivity_data_422.01_unsupported_precision
   Scenario: Error 422 when precision is set to a valid but not supported value
-    Given the request body property "$.precision" is set to a valid but not supported value
+    Given the request body property "$.area.areaType" is set to "POLYGON"
+    And the request body property "$.precision" is set to a valid but not supported value
     When the request "retrieveConnectivity" is sent
     Then the response status code is 422
     And the response header "Content-Type" is "application/json"
@@ -442,16 +593,54 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
   #To test this scenario provided values for "$.area.boundary", "$.startTime", "$.endTime" and "$.precision" MUST generate a too big response in both sync and async scenarios
   Scenario: Error 422 when the response is too big for a sync and async response
     Given the request body properties "$.area.boundary", "$.startTime", "$.endTime" and "$.precision" are set to valid values
+    When the request "retrieveConnectivity" is sent
     Then the response status code is 422
     And the response header "Content-Type" is "application/json"
     And the response property "$.status" is 422
     And the response property "$.code" is "PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_REQUEST"
     And the response property "$.message" contains a user friendly text
 
-    # Error 429 scenarios
+  @predictive_connectivity_data_422.04_unsupported_area_type
+  #To test this scenario the implementation must not support the GEOHASHLIST area type
+  Scenario: Error 422 when the requested areaType is not supported by the implementation
+    Given the request body property "$.area.areaType" is set to "GEOHASHLIST"
+    And the request body property "$.area.geohashes" is set to a list of valid geohashes within supported regions
+    And the request body property "$.precision" is not included
+    When the request "retrieveConnectivity" is sent
+    Then the response status code is 422
+    And the response header "Content-Type" is "application/json"
+    And the response property "$.status" is 422
+    And the response property "$.code" is "PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_AREA_TYPE"
+    And the response property "$.message" contains a user friendly text
 
-  @predictive_connectivity_data_429.01_too_Many_Requests
-    #To test this scenario environment has to be configured to reject requests reaching the limit settled. N is a value defined by the Telco Operator
+  @predictive_connectivity_data_422.05_unsupported_geohash_precision
+  #To test this scenario at least one geohash must use a precision (length) not supported by the implementation
+  Scenario: Error 422 when a geohash in the list uses a precision not supported by the implementation
+    Given the request body property "$.area.areaType" is set to "GEOHASHLIST"
+    And the request body property "$.area.geohashes" contains a valid geohash whose precision (length) is not supported by the implementation
+    And the request body property "$.precision" is not included
+    When the request "retrieveConnectivity" is sent
+    Then the response status code is 422
+    And the response header "Content-Type" is "application/json"
+    And the response property "$.status" is 422
+    And the response property "$.code" is "PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_PRECISION"
+    And the response property "$.message" contains a user friendly text
+
+  @predictive_connectivity_data_422.06_unsupported_service_level
+  #To test this scenario the requested serviceLevel must be a valid enum value not supported by the implementation
+  Scenario: Error 422 when the requested serviceLevel is not supported by the implementation
+    Given the request body property "$.serviceLevel" is set to a valid but not supported communication service level
+    When the request "retrieveConnectivity" is sent
+    Then the response status code is 422
+    And the response header "Content-Type" is "application/json"
+    And the response property "$.status" is 422
+    And the response property "$.code" is "PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_SERVICE_LEVEL"
+    And the response property "$.message" contains a user friendly text
+
+  # Error 429 scenarios
+
+  @predictive_connectivity_data_429.01_too_many_requests
+  #To test this scenario environment has to be configured to reject requests reaching the limit settled. N is a value defined by the Telco Operator
   Scenario: Request is rejected due to threshold policy
     Given that the environment is configured with a threshold policy of N transactions per second
     And the request body is set to a valid request body
