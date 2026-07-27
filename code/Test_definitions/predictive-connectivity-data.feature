@@ -24,14 +24,14 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
     And the resource "/predictive-connectivity-data/vwip/retrieve"
     And the header "Content-Type" is set to "application/json"
     And the header "Authorization" is set to a valid access token
-    And the header "x-correlator" complies with the schema at "../common/CAMARA_common.yaml#/components/schemas/XCorrelator"
+    And the header "x-correlator" complies with the schema at "/components/schemas/XCorrelator"
     And the request body is set by default to a request body compliant with the schema
 
   # Happy path scenarios
 
   @predictive_connectivity_data_01_polygon_supported_area_success_scenario
   Scenario: Validate success response for a supported area request
-    Given the request body property "$.area" is set to a valid testing POLYGON area within supported regions
+    Given the request body property "$.area" is set to a valid testing POLYGON area wholly within the supported regions
     And the request body properties "$.startTime" and "$.endTime" are valid future date-times, with "$.endTime" later than "$.startTime"
     And the request body property "$.serviceLevel" is set to a valid communication service level
     When the request "retrieveConnectivity" is sent
@@ -47,7 +47,7 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
 
   @predictive_connectivity_data_02_polygon_partial_area_success_scenario
   Scenario: Validate success response for a partial supported area request
-    Given the request body property "$.area" is set to a valid testing POLYGON area partially within supported regions
+    Given the request body property "$.area" is set to a valid testing POLYGON area partially within the supported regions
     And the request body properties "$.startTime" and "$.endTime" are valid future date-times, with "$.endTime" later than "$.startTime"
     And the request body property "$.serviceLevel" is set to a valid communication service level
     When the request "retrieveConnectivity" is sent
@@ -64,7 +64,7 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
 
   @predictive_connectivity_data_03_polygon_not_supported_area_success_scenario
   Scenario: Validate success response for unsupported area request
-    Given the request body property "$.area" is set to a valid testing POLYGON area outside supported regions
+    Given the request body property "$.area" is set to a valid testing POLYGON area entirely outside the supported regions
     And the request body properties "$.startTime" and "$.endTime" are valid future date-times, with "$.endTime" later than "$.startTime"
     And the request body property "$.serviceLevel" is set to a valid communication service level
     When the request "retrieveConnectivity" is sent
@@ -78,7 +78,7 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
   @predictive_connectivity_data_04_geohashlist_supported_area_success_scenario
   Scenario: Validate success response for a supported area request defined as a list of geohashes
     Given the request body property "$.area.areaType" is set to "GEOHASHLIST"
-    And the request body property "$.area.geohashes" is set to a list of valid geohashes within supported area
+    And the request body property "$.area.geohashes" is set to a list of valid geohashes wholly within the supported area
     And the request body property "$.precision" is not included
     And the request body properties "$.startTime" and "$.endTime" are valid future date-times, with "$.endTime" later than "$.startTime"
     And the request body property "$.serviceLevel" is set to a valid communication service level
@@ -95,9 +95,9 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
     And the response property "$.timedConnectivityData[*].cellConnectivityData[*].layerSignalStrengths" is not included in the response
 
   @predictive_connectivity_data_05_geohashlist_partial_area_success_scenario
-  Scenario: Validate success response for a list of geohashes partially within supported regions
+  Scenario: Validate success response for a list of geohashes partially within the supported regions
     Given the request body property "$.area.areaType" is set to "GEOHASHLIST"
-    And the request body property "$.area.geohashes" is set to a list of valid geohashes partially within supported regions
+    And the request body property "$.area.geohashes" is set to a list of valid geohashes partially within the supported regions
     And the request body property "$.precision" is not included
     And the request body properties "$.startTime" and "$.endTime" are valid future date-times, with "$.endTime" later than "$.startTime"
     And the request body property "$.serviceLevel" is set to a valid communication service level
@@ -116,7 +116,7 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
   @predictive_connectivity_data_06_geohashlist_not_supported_area_success_scenario
   Scenario: Validate success response for a list of geohashes entirely outside supported regions
     Given the request body property "$.area.areaType" is set to "GEOHASHLIST"
-    And the request body property "$.area.geohashes" is set to a list of valid geohashes outside supported regions
+    And the request body property "$.area.geohashes" is set to a list of valid geohashes entirely outside the supported regions
     And the request body property "$.precision" is not included
     And the request body properties "$.startTime" and "$.endTime" are valid future date-times, with "$.endTime" later than "$.startTime"
     And the request body property "$.serviceLevel" is set to a valid communication service level
@@ -431,7 +431,7 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
   @predictive_connectivity_data_400.17_precision_with_geohashlist
   Scenario: Error 400 when precision is included together with a GEOHASHLIST area
     Given the request body property "$.area.areaType" is set to "GEOHASHLIST"
-    And the request body property "$.area.geohashes" is set to a list of valid geohashes within supported regions
+    And the request body property "$.area.geohashes" is set to a list of valid geohashes within the supported regions
     And the request body property "$.precision" is included
     When the request "retrieveConnectivity" is sent
     Then the response status code is 400
@@ -508,7 +508,7 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
   # The x-correlator sent in the request is invalid, so the response is not expected to echo it back
   @predictive_connectivity_data_400.24_invalid_x_correlator
   Scenario: Error 400 when the x-correlator header does not comply with the schema
-    Given the request header "x-correlator" is not compliant with the schema at "../common/CAMARA_common.yaml#/components/schemas/XCorrelator"
+    Given the request header "x-correlator" is not compliant with the schema at "/components/schemas/XCorrelator"
     When the request "retrieveConnectivity" is sent
     Then the response status code is 400
     And the response header "Content-Type" is "application/json"
@@ -604,7 +604,7 @@ Feature: CAMARA Predictive Connectivity Data API, vwip
   #To test this scenario the implementation must not support the GEOHASHLIST area type
   Scenario: Error 422 when the requested areaType is not supported by the implementation
     Given the request body property "$.area.areaType" is set to "GEOHASHLIST"
-    And the request body property "$.area.geohashes" is set to a list of valid geohashes within supported regions
+    And the request body property "$.area.geohashes" is set to a list of valid geohashes within the supported regions
     And the request body property "$.precision" is not included
     When the request "retrieveConnectivity" is sent
     Then the response status code is 422
