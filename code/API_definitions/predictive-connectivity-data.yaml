@@ -943,11 +943,11 @@ components:
     ConnectivityDataSupportedAreaAsyncResponseExample:
       description: Connectivity data supported area async response example
       value:
-        id: 123654,
-        source: "https://notificationSendServer12.example.com",
-        type: "org.camaraproject.predictive-connectivity-data.v0.connectivity-data-available",
-        specversion: "1.0",
-        datacontenttype: "application/json",
+        id: 123654
+        source: "https://notificationSendServer12.example.com"
+        type: "org.camaraproject.predictive-connectivity-data.v0.connectivity-data-available"
+        specversion: "1.0"
+        datacontenttype: "application/json"
         time: "2023-01-17T13:18:23.682Z"
         data:
           layerThickness: 30
@@ -1003,11 +1003,11 @@ components:
     ConnectivityDataOperationNotCompletedExample:
       description: Connectivity data operation not completed example
       value:
-        id: 123654,
-        source: "https://notificationSendServer12.example.com",
-        type: "org.camaraproject.predictive-connectivity-data.v0.connectivity-data-not-available",
-        specversion: "1.0",
-        datacontenttype: "application/json",
+        id: 123654
+        source: "https://notificationSendServer12.example.com"
+        type: "org.camaraproject.predictive-connectivity-data.v0.connectivity-data-not-available"
+        specversion: "1.0"
+        datacontenttype: "application/json"
         time: "2023-01-17T13:18:23.682Z"
         data:
           layerThickness: 30
