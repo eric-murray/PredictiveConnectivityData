@@ -263,26 +263,26 @@ paths:
           $ref: '../common/CAMARA_common.yaml#/components/responses/Generic429'
       callbacks:
         connectivityCallback:
-          '{$request.body#/sink}':
+          "{$request.body#/sink}":
             post:
               summary: Callback for asynchronous connectivity data retrieval
               description: >-
                 This callback is invoked to provide the result of an asynchronous
                 connectivity data retrieval request.
-              operationId: connectivityCallback
+              operationId: sendConnectivityData
               parameters:
                 - $ref: "../common/CAMARA_common.yaml#/components/parameters/x-correlator"
               requestBody:
+                required: true
                 content:
-                  application/json:
+                  application/cloudevents+json:
                     schema:
-                      $ref: '#/components/schemas/ConnectivityDataAsyncResponse'
+                      $ref: "#/components/schemas/ApiNotificationEvent"
                     examples:
                       ConnectivityDataSupportedAreaAsyncResponseExample:
                         $ref: "#/components/examples/ConnectivityDataSupportedAreaAsyncResponseExample"
                       ConnectivityDataOperationNotCompletedExample:
                         $ref: "#/components/examples/ConnectivityDataOperationNotCompletedExample"
-                required: true
               responses:
                 "204":
                   description: Successful notification
@@ -309,6 +309,43 @@ components:
     notificationsBearerAuth:
       $ref: "../common/CAMARA_event_common.yaml#/components/securitySchemes/notificationsBearerAuth"
   schemas:
+    ApiEventType:
+      type: string
+      description: |
+        The list of events that can be sent by the API
+      enum:
+        - org.camaraproject.predictive-connectivity-data.v0.connectivity-data-available
+        - org.camaraproject.predictive-connectivity-data.v0.connectivity-data-not-available
+    EventConnectivityDataAvailable:
+      description: Event structure for event type connectivity-data-available, containing the connectivity data
+      allOf:
+        - $ref: "#/components/schemas/ApiNotificationEvent"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/ConnectivityDataAsyncResponse"
+    EventConnectivityDataNotAvailable:
+      description: Event structure for event type connectivity-data-not-available
+      allOf:
+        - $ref: "#/components/schemas/ApiNotificationEvent"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/ConnectivityDataAsyncResponse"
+    ApiNotificationEvent:
+      description: |
+        Callback that includes the connectivity data
+      allOf:
+        - $ref: "../common/CAMARA_event_common.yaml#/components/schemas/CloudEvent"
+        - type: object
+          properties:
+            type:
+              $ref: "#/components/schemas/ApiEventType"
+      discriminator:
+        propertyName: "type"
+        mapping:
+          org.camaraproject.predictive-connectivity-data.v0.connectivity-data-available: "#/components/schemas/EventConnectivityDataAvailable"
+          org.camaraproject.predictive-connectivity-data.v0.connectivity-data-not-available: "#/components/schemas/EventConnectivityDataNotAvailable"
     RetrieveConnectivityRequest:
       type: object
       description: Request object for retrieving connectivity data in a specified area.
@@ -906,64 +943,78 @@ components:
     ConnectivityDataSupportedAreaAsyncResponseExample:
       description: Connectivity data supported area async response example
       value:
-        layerThickness: 30
-        timedConnectivityData:
-          - startTime: "2024-01-03T11:00:00Z"
-            endTime: "2024-01-03T12:00:00Z"
-            cellConnectivityData:
-              - geohash: ezdmemd
-                layerConnectivities:
-                  - GC
-                  - GC
-                  - GC
-                  - GC
-                  - GC
-                  - NC
-                  - NC
-                  - NC
-              - geohash: ezdmemc
-                layerConnectivities:
-                  - GC
-                  - GC
-                  - GC
-                  - GC
-                  - GC
-                  - NC
-                  - NC
-                  - NC
-          - startTime: "2024-01-03T12:00:00Z"
-            endTime: "2024-01-03T13:00:00Z"
-            cellConnectivityData:
-              - geohash: ezdmemd
-                layerConnectivities:
-                  - GC
-                  - GC
-                  - GC
-                  - GC
-                  - GC
-                  - NC
-                  - NC
-                  - NC
-              - geohash: ezdmemc
-                layerConnectivities:
-                  - GC
-                  - GC
-                  - GC
-                  - GC
-                  - GC
-                  - NC
-                  - NC
-                  - NC
-        status: SUPPORTED_AREA
-        operationId: 2322f362-eaab-4cf3-86d2-efcbdf3a7cb4
+        id: 123654,
+        source: "https://notificationSendServer12.example.com",
+        type: "org.camaraproject.predictive-connectivity-data.v0.connectivity-data-available",
+        specversion: "1.0",
+        datacontenttype: "application/json",
+        time: "2023-01-17T13:18:23.682Z"
+        data:
+          layerThickness: 30
+          timedConnectivityData:
+            - startTime: "2024-01-03T11:00:00Z"
+              endTime: "2024-01-03T12:00:00Z"
+              cellConnectivityData:
+                - geohash: ezdmemd
+                  layerConnectivities:
+                    - GC
+                    - GC
+                    - GC
+                    - GC
+                    - GC
+                    - NC
+                    - NC
+                    - NC
+                - geohash: ezdmemc
+                  layerConnectivities:
+                    - GC
+                    - GC
+                    - GC
+                    - GC
+                    - GC
+                    - NC
+                    - NC
+                    - NC
+            - startTime: "2024-01-03T12:00:00Z"
+              endTime: "2024-01-03T13:00:00Z"
+              cellConnectivityData:
+                - geohash: ezdmemd
+                  layerConnectivities:
+                    - GC
+                    - GC
+                    - GC
+                    - GC
+                    - GC
+                    - NC
+                    - NC
+                    - NC
+                - geohash: ezdmemc
+                  layerConnectivities:
+                    - GC
+                    - GC
+                    - GC
+                    - GC
+                    - GC
+                    - NC
+                    - NC
+                    - NC
+          status: SUPPORTED_AREA
+          operationId: 2322f362-eaab-4cf3-86d2-efcbdf3a7cb4
     ConnectivityDataOperationNotCompletedExample:
       description: Connectivity data operation not completed example
       value:
-        layerThickness: 30
-        timedConnectivityData: []
-        status: OPERATION_NOT_COMPLETED
-        statusInfo: Some error happened during the processing of the request
-        operationId: 2322f362-eaab-4cf3-86d2-efcbdf3a7cb4
+        id: 123654,
+        source: "https://notificationSendServer12.example.com",
+        type: "org.camaraproject.predictive-connectivity-data.v0.connectivity-data-not-available",
+        specversion: "1.0",
+        datacontenttype: "application/json",
+        time: "2023-01-17T13:18:23.682Z"
+        data:
+          layerThickness: 30
+          timedConnectivityData: []
+          status: OPERATION_NOT_COMPLETED
+          statusInfo: Some error happened during the processing of the request
+          operationId: 2322f362-eaab-4cf3-86d2-efcbdf3a7cb4
     ConnectivityDataWithSignalStrengthResponseExample:
       description: Connectivity data with signal strength response example
       value:
