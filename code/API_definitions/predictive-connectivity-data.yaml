@@ -943,7 +943,7 @@ components:
     ConnectivityDataSupportedAreaAsyncResponseExample:
       description: Connectivity data supported area async response example
       value:
-        id: 123654
+        id: "123654"
         source: "https://notificationSendServer12.example.com"
         type: "org.camaraproject.predictive-connectivity-data.v0.connectivity-data-available"
         specversion: "1.0"
@@ -1003,7 +1003,7 @@ components:
     ConnectivityDataOperationNotCompletedExample:
       description: Connectivity data operation not completed example
       value:
-        id: 123654
+        id: "123654"
         source: "https://notificationSendServer12.example.com"
         type: "org.camaraproject.predictive-connectivity-data.v0.connectivity-data-not-available"
         specversion: "1.0"
