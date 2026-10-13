@@ -122,7 +122,7 @@ info:
     # Resources and Operations Overview
 
     The API exposes a single POST endpoint (`/retrieve`) for retrieving predictive connectivity data for a specified area, service level, network type, and time interval.
-    The API call result is an array of time slots (`timedConnectivityData`), with per time slot an array of cells (`cellConnectivityData`), with for each cell the connectivity levels per vertical layer (see **Connectivity Level** in the definitions above).
+    The API call result is an array of time slots (`timedConnectivityData`), with each time slot containing an array of cells (`cellConnectivityData`), and each cell containing the connectivity levels per vertical layer (see **Connectivity Level** in the definitions above).
 
     When an asynchronous response is requested (using `sink`, see Callback URL and Token in the Relevant Terms and Definitions section above), the 202 response of the API will include an `operationId` property. This `operationId` property will also be sent in the callback payload, correlating the asynchronous response with its corresponding request. If provided, `sinkCredential.credentialType` MUST be set to `ACCESSTOKEN` or `PRIVATE_KEY_JWT`.
 
