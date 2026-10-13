@@ -35,7 +35,7 @@ info:
     - **STREAM_4K**: Streaming in 4K quality.
     - **BEST_EFFORT**: A qualitative estimation of coverage based on operator prediction models or public coverage maps, without guarantees of network performance.
 
-    An MNO may not support every service level. If the requested service level is not supported, the API returns `422 PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_SERVICE_LEVEL`.
+    The API provider (mobile network operator) may not support every service level. If the requested service level is not supported, the API returns `422 PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_SERVICE_LEVEL`.
 
     **Network Type**
     The type of connectivity (4G or 5G) for which to retrieve data. If not specified, connectivity quality is returned considering both 4G and 5G networks.
@@ -47,7 +47,7 @@ info:
     A vertical subdivision of the airspace above a grid cell. All layers have the same thickness (`layerThickness` metres) and are ordered consecutively starting from the ground (index 0 = 0 m AGL). The layer at index N covers the altitude range from N x `layerThickness` to (N+1) x `layerThickness` metres AGL.
 
     **Signal Strength**
-    Raw signal strength measurements in dBm that can be optionally included in the response when supported by the implementation and requested via `includeSignalStrength`.
+    Raw signal strength predictions in dBm that can be optionally included in the response when supported by the implementation and requested via `includeSignalStrength`.
 
     **Area Types**
     - **POLYGON**: Area defined by a list of latitude/longitude points forming a simple polygon. The polygon is subdivided into a grid of cells. The set of cells corresponds to the geohashes, at the requested precision, that cover the polygon.
@@ -59,14 +59,15 @@ info:
     - For geohash lists, each geohash corresponds to a single cell at its own precision level.
 
     **Geohash**
-    A geohash is a string-encoded representation of a geographical area/point on the globe. The (32-base) geohash model represents the globe as a grid of 32 fixed rectangular areas, referred to as cells. Each cell is identified by a single letter or digit. Zooming in to one cell (recursively) gives a more granular (or higher precision) 32-cell grid at the next level with each cell again identified by a single letter or digit. The geohash is a string that identifies a cell at a given zoom level by concatenating the identifiers of all previous level grid cells selected. The deeper the zoom, the longer the string and the higher the granularity/precision of the cell. The maximum zoom/precision level supported by this API is 12. The length (number of characters) of the geohash indicates its precision (zoom level/granularity). More information at [Geohash system](https://en.wikipedia.org/wiki/Geohash).
+    A geohash is a string-encoded representation of a geographical area/point on the globe. The (32-base) geohash model represents the globe as a grid of 32 fixed rectangular areas, referred to as cells. Each cell is identified by a single letter or digit. Zooming in to one cell (recursively) gives a more granular (or higher precision) 32-cell grid at the next level with each cell again identified by a single letter or digit.
+    The geohash is a string that identifies a cell at a given zoom level by concatenating the identifiers of all previous level grid cells selected. The deeper the zoom, the longer the string and the higher the granularity/precision of the cell. The maximum zoom/precision level supported by this API is 12, which gives grid cells with a maximum dimension of 37.2 mm or less. The length (number of characters) of the geohash indicates its precision (zoom level/granularity). More information can be found at [Geohash system](https://en.wikipedia.org/wiki/Geohash).
 
     **Precision**
     Defines the granularity level of grid cells.
     - **POLYGON**: The precision level is given by the `precision` request property. If not included, the default precision level 7 is used.
     - **GEOHASHLIST**: Each geohash's own length determines its precision. The `precision` property MUST NOT be included.
 
-    **MNO Coverage Area**
+    **Mobile Network Coverage Area**
     The geographic area where the Mobile Network Operator (MNO) provides connectivity services. Cells outside this area are returned with all connectivity values set to `ND`.
 
     **Synchronous vs Asynchronous Processing**
@@ -84,9 +85,9 @@ info:
     To retrieve predictive connectivity data, the API consumer specifies:
     1. The **area** (polygon or geohash list)
     2. The **precision** (only for polygon areas; defaults to 7 if omitted)
-    3. The **service level** (C2, STREAM_4K, or BEST_EFFORT)
+    3. The **service level** (currently one of C2, STREAM_4K, or BEST_EFFORT)
     4. The **time interval** (`startTime` and `endTime`)
-    5. Optionally, a **height** in metres AGL to filter to a single layer
+    5. Optionally, a **height** in metres AGL to limit predictions to a single layer
     6. Optionally, a **network type** (4G or 5G; both if omitted)
     7. Optionally, **includeSignalStrength** to request raw dBm values
 
@@ -100,21 +101,21 @@ info:
     Polygon areas must meet certain constraints:
     - Maximum polygon area size (implementation-specific).
     - Must have a minimum of 3 and can have a maximum of 15 geographical points defining the polygon.
-    - Must lie at least partially within the MNO coverage area; otherwise, the response has `status` set to `AREA_NOT_SUPPORTED` and an empty array is returned.
+    - Must lie at least partially within the mobile network coverage area; otherwise, the response has `status` set to `AREA_NOT_SUPPORTED` and an empty array is returned.
 
     For geohash lists:
-    - Support for `POLYGON` is mandatory for all MNOs, while support for `GEOHASHLIST` is optional. If the MNO does not support `GEOHASHLIST`, the API returns `422 PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_AREA_TYPE`.
+    - Support for `POLYGON` is mandatory for all API providers, whilst support for `GEOHASHLIST` is optional. If the API provider does not support `GEOHASHLIST`, the API returns `422 PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_AREA_TYPE`.
     - Geohashes may be non-contiguous and have varying precision.
     - Unsupported geohash precisions result in `422 PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_PRECISION`.
     - Geohashes outside coverage are returned with `layerConnectivities` containing all items set to `ND`.
     - If all geohashes are outside coverage, the response status is `AREA_NOT_SUPPORTED`.
 
-    The API normally behaves synchronously. However, large requests may trigger asynchronous processing. API Consumers may enforce asynchronous behavior by providing a `sink` callback URL. If asynchronous processing is not supported, the API returns `422 PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_ASYNC_RESPONSE`.
+    The API normally behaves synchronously. However, large requests may trigger asynchronous processing. API Consumers may request asynchronous behavior by providing a `sink` callback URL. If asynchronous processing is not supported, the API returns `422 PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_ASYNC_RESPONSE`.
 
     Three mutually exclusive `422` errors indicate why a request cannot be served. They are evaluated in this order:
-    - **PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_ASYNC_RESPONSE**: `sink` is provided but asynchronous processing is not supported at all. It does not depend on the size of the request; the API consumer can retry the same request without `sink` to obtain a synchronous response.
-    - **PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_SYNC_RESPONSE**: Request too large for synchronous processing and asynchronous processing is not enabled. A smaller request would succeed.
-    - **PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_REQUEST**: Request too large for both synchronous and asynchronous processing. Retrying with `sink` does not help; only a smaller request does.
+    - **PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_ASYNC_RESPONSE**: `sink` is provided but asynchronous processing is not supported by the API provider. It does not depend on the size of the request; the API consumer can retry the same request without `sink` to obtain a synchronous response.
+    - **PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_SYNC_RESPONSE**: The request is too large for synchronous processing, and asynchronous processing has not been requested. A smaller request for a synchronous response may succeed.
+    - **PREDICTIVE_CONNECTIVITY_DATA.UNSUPPORTED_REQUEST**: The request is too large for both synchronous and asynchronous processing. The requested coverage area and/or precision must be reduced.
 
     If an error occurs during asynchronous processing, the callback includes `status = OPERATION_NOT_COMPLETED` and a `statusInfo` field with additional details.
 
